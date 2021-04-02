@@ -89,10 +89,10 @@ namespace SEDB_LITE {
 
 
         public async void SendStatusMessage(string user, ulong steamID, string msg) {
+            Log.WriteLineAndConsole($"{user} | {msg} | {steamID}");
             if (Ready && Plugin.m_configuration.ChannelID.Length > 0) {
                 try {
                     DiscordChannel chann = Discord.GetChannelAsync(ulong.Parse(Plugin.m_configuration.ChannelID)).Result;
-                    Log.WriteLineAndConsole($"{user} | {msg} | {steamID}");
                     if (user != null) {
                         if (user.StartsWith("ID:"))
                             return;

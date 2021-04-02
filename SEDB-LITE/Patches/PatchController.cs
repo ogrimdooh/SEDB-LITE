@@ -21,21 +21,41 @@ namespace SEDB_LITE {
 
         }
 
+        public class PostFixMethod : Attribute {
+
+        }
+
         public class PatchingClass : Attribute {
 
         }
 
         public static void PatchMethods() {
-            var harmony = new Harmony("SEDB-LITE");
             Log.WriteLineAndConsole("Patching methods...");
             var assembly = Assembly.GetExecutingAssembly();
 
             foreach(var PatchingClass in GetPatchingClasses(assembly)) {
                 foreach (var method in PatchingClass.GetMethods().Where(x => x.GetCustomAttributes(typeof(PrefixMethod), false).FirstOrDefault() != null)) {
-                    TargetMethod TargetMethodData = (TargetMethod)method.GetCustomAttribute(typeof(TargetMethod));
-                    Log.WriteLineAndConsole($"Patching {TargetMethodData.Method} with {method.Name} (Prefix)");
-                    harmony.Patch(TargetMethodData.Type.GetMethod(TargetMethodData.Method, BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.Static | BindingFlags.Public), new HarmonyMethod(method));
+                    Patch(method, typeof(PrefixMethod));
                 }
+
+                foreach (var method in PatchingClass.GetMethods().Where(x => x.GetCustomAttributes(typeof(PostFixMethod), false).FirstOrDefault() != null)) {
+                    Patch(method, typeof(PrefixMethod));
+                }
+            }
+        }
+
+        public static void Patch(MethodInfo newMethod,Type typeOfPatch) {
+            var harmony = new Harmony("SEDB-LITE");
+            TargetMethod TargetMethodData = (TargetMethod)newMethod.GetCustomAttribute(typeof(TargetMethod));
+            Log.WriteLineAndConsole($"Patching {TargetMethodData.Method} with {newMethod.Name} (Prefix)");
+
+            if (typeOfPatch == typeof(PrefixMethod)) {
+                harmony.Patch(TargetMethodData.Type.GetMethod(TargetMethodData.Method, BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.Static | BindingFlags.Public), new HarmonyMethod(newMethod));
+
+            }
+            else {
+                harmony.Patch(TargetMethodData.Type.GetMethod(TargetMethodData.Method, BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.Static | BindingFlags.Public), null, new HarmonyMethod(newMethod));
+
             }
         }
 

@@ -12,6 +12,7 @@ using Sandbox.Game.Gui;
 using VRage.Utils;
 using static SEDB_LITE.PatchController;
 using VRage.GameServices;
+using System.Text.RegularExpressions;
 
 namespace SEDB_LITE.Patches {
     [PatchingClass]
@@ -24,11 +25,13 @@ namespace SEDB_LITE.Patches {
         }
 
         [PrefixMethod]
-        [TargetMethod(Type = typeof(MyMultiplayerBase), Method = "RaiseClientLeft")]
-        public static void PlayerDisconnected(ulong changedUser, MyChatMemberStateChangeEnum stateChange) {
+        [TargetMethod(Type = typeof(MyDedicatedServerBase), Method = "MyDedicatedServer_ClientLeft")]
+        public static void PlayerDisconnected(ulong user, MyChatMemberStateChangeEnum arg2) {
+
             try {
-                string playerName = Utilities.GetPlayerName(changedUser);
-                Task.Run(async () => Plugin.ProcessStatusMessage(playerName, changedUser, Plugin.m_configuration.DisconnectedMessage));
+                string playerName = Utilities.GetPlayerName(user);
+                if (!(playerName.StartsWith("[") && playerName.EndsWith("]") && playerName.Contains("...")))
+                    Task.Run(async () => Plugin.ProcessStatusMessage(playerName, user, Plugin.m_configuration.DisconnectedMessage));
             }
             catch (Exception e) {
                 Log.WriteLineAndConsole(e.ToString());
