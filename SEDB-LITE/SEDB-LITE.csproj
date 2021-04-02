@@ -184,6 +184,7 @@
     <Compile Include="Patches\ChatPatch.cs" />
     <Compile Include="Patches\PlayerJoinedPatch.cs" />
     <Compile Include="Patches\PlayerLeftPatch.cs" />
+    <Compile Include="Patches\WorldRequestPatch.cs" />
     <Compile Include="Plugin.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="SEDB-LiteConfig.cs" />
