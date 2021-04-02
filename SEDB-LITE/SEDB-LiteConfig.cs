@@ -20,11 +20,6 @@ using VRage.Plugins;
 
 namespace SEDB_LITE {
     public class SEDB_LiteConfig : IPluginConfiguration {
-        [Display(Name = "Enum")]
-        [Category("General")]
-        [Browsable(false)]
-        public TestEnum TestEnumMember = TestEnum.EnumValue1;
-
         [Display(Name = "Enabled", Order = 1)]
         [Category("General")]
         [Description("Enable/Disable the Plugin...")]
@@ -50,7 +45,7 @@ namespace SEDB_LITE {
         [Browsable(false)]
         public string GlobalColor = "White";
 
-        [Display(Name = "Display SteamID on Join")]
+        [Display(Name = "Display SteamID for each player")]
         [Category("General")]
         [Browsable(false)]
         public bool DisplaySteamID = false;
@@ -58,7 +53,12 @@ namespace SEDB_LITE {
         [Display(Name = "Message that is displayed when user connects")]
         [Category("General")]
         [Browsable(false)]
-        public string ConnectedMessage = ":sunny: The player {p} joined the server";
+        public string ConnectedMessage = ":sunny: {p} joined the server";
+
+        [Display(Name = "Message that is displayed when user connects")]
+        [Category("General")]
+        [Browsable(false)]
+        public string DisconnectedMessage = ":new_moon: {p} left the server";
 
         [Display(Name = "Send messages into game as Server")]
         [Category("General")]
@@ -91,11 +91,5 @@ namespace SEDB_LITE {
                 serializer.Serialize(stream, this);
             }
         }
-    }
-
-    public enum TestEnum {
-        EnumValue1,
-        EnumValue2,
-        EnumValue3
     }
 }

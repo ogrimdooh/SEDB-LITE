@@ -25,21 +25,17 @@ namespace SEDB_LITE {
 
         public void Init(object gameInstance) {
             var harmony = new Harmony("SEDB-LITE");
+
             chatPatch = new Patches.ChatPatch(this);
             PlayerJoinedPatch = new Patches.PlayerJoinedPatch(this);
+            try {
+                PatchController.PatchMethods();
+            } catch(Exception e) {
+                Log.WriteLineAndConsole($"PATCHING FAILED {e.ToString()}");
+            }
 
             try {
                 GetConfiguration(VRage.FileSystem.MyFileSystem.UserDataPath);
-                //Try Patch
-                var RaiseChatMessageReceived = typeof(MyMultiplayerBase).GetMethod("RaiseChatMessageReceived", BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.Static);
-                var ProcessChat = typeof(Patches.ChatPatch).GetMethod("ProcessChat", BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.Static | BindingFlags.Public);
-                harmony.Patch(RaiseChatMessageReceived, new HarmonyMethod(ProcessChat));
-
-                var RaiseClientJoined = typeof(MyMultiplayerBase).GetMethod("RaiseClientJoined", BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.Static | BindingFlags.Public);
-                var PlayerConnected = typeof(Patches.PlayerJoinedPatch).GetMethod("PlayerConnected", BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.Static | BindingFlags.Public);
-                //harmony.Patch(RaiseClientJoined, new HarmonyMethod(PlayerConnected));
-
-
                 Log.WriteLineAndConsole("Starting Discord Bridge!");
                 if (m_configuration.Enabled) {
 
@@ -89,8 +85,8 @@ namespace SEDB_LITE {
         }
 
 
-        public Task ProcessStatusMessage(string user, ulong player) {
-            DDBridge.SendStatusMessage(user, m_configuration.ConnectedMessage, player);
+        public Task ProcessStatusMessage(string user, ulong player, string message) {
+            DDBridge.SendStatusMessage(user, player, message);
             return Task.CompletedTask;
         }
 

@@ -180,6 +180,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Bridge.cs" />
+    <Compile Include="Patches\PatchController.cs" />
     <Compile Include="Patches\ChatPatch.cs" />
     <Compile Include="Patches\PlayerJoinedPatch.cs" />
     <Compile Include="Patches\PlayerLeftPatch.cs" />
