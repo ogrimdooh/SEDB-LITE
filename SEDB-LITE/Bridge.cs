@@ -37,7 +37,6 @@ namespace SEDB_LITE {
         public static MyLog Log = new MyLog();
         private string lastMessage = "";
         private int retry = 0;
-        public bool Ready { get; set; } = false;
         public static DiscordClient Discord { get; set; }
 
         public Bridge(Plugin plugin) {
@@ -57,7 +56,6 @@ namespace SEDB_LITE {
             Discord.MessageCreated += Discord_MessageCreated;
 
             Discord.Ready += async (c,e) => {
-                Ready = true;
                 await Task.CompletedTask;
             };
             return Task.CompletedTask;
@@ -80,7 +78,7 @@ namespace SEDB_LITE {
             public void SendStatus(string status) {
             DiscordActivity game = new DiscordActivity();
             UserStatus state = new UserStatus();
-            if (Ready && status?.Length > 0) {
+            if (Plugin.Ready && status?.Length > 0) {
                 game.Name = status;
                 state = UserStatus.Online;
                 Discord.UpdateStatusAsync(game, state);
@@ -89,8 +87,7 @@ namespace SEDB_LITE {
 
 
         public async void SendStatusMessage(string user, ulong steamID, string msg) {
-            Log.WriteLineAndConsole($"{user} | {msg} | {steamID}");
-            if (Ready && Plugin.m_configuration.ChannelID.Length > 0) {
+            if (Plugin.Ready && Plugin.m_configuration.ChannelID.Length > 0) {
                 try {
                     DiscordChannel chann = Discord.GetChannelAsync(ulong.Parse(Plugin.m_configuration.ChannelID)).Result;
                     if (user != null) {
@@ -111,7 +108,7 @@ namespace SEDB_LITE {
 
         public async Task SendChatMessage(string user, string msg) {
             if (lastMessage.Equals(user + msg)) return;
-            if (Ready && Plugin.m_configuration.ChannelID.Length > 0) {
+            if (Plugin.Ready && Plugin.m_configuration.ChannelID.Length > 0) {
                 foreach (var chanID in Plugin.m_configuration.ChannelID.Split(' ')) {
 
                     DiscordChannel chann = Discord.GetChannelAsync(ulong.Parse(chanID)).Result;
@@ -152,7 +149,7 @@ namespace SEDB_LITE {
         }
 
         public void UnloadBot() {
-            Ready = false;
+            Plugin.Ready = false;
             Discord?.DisconnectAsync();
         }
 

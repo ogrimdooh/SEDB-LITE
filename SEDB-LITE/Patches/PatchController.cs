@@ -11,7 +11,6 @@ namespace SEDB_LITE {
 
     public static class PatchController {
         public static MyLog Log = new MyLog();
-        public static dynamic CastedClas = null;
         public class TargetMethod : Attribute {
             public Type Type { get; set; }
             public string Method { get; set; }
@@ -58,7 +57,7 @@ namespace SEDB_LITE {
                 }
             }
 
-            Log.WriteLineAndConsole($"Patching {TargetMethodData.Method} with {newMethod.Name} (Prefix)");
+            Log.WriteLineAndConsole($"Patching {TargetMethodData.Method} with {newMethod.Name}");
 
             if (typeOfPatch == typeof(PrefixMethod)) {
                 harmony.Patch(TargetMethodData.Type.GetMethod(TargetMethodData.Method, BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.Static | BindingFlags.Public), new HarmonyMethod(newMethod));
