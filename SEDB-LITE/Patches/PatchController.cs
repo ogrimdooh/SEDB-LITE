@@ -40,7 +40,7 @@ namespace SEDB_LITE {
                 }
 
                 foreach (var method in PatchingClass.GetMethods().Where(x => x.GetCustomAttributes(typeof(PostFixMethod), false).FirstOrDefault() != null)) {
-                    Patch(method, typeof(PrefixMethod));
+                    Patch(method, typeof(PostFixMethod));
                 }
             }
         }
