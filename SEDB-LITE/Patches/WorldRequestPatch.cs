@@ -28,15 +28,15 @@ namespace SEDB_LITE.Patches {
         }
 
 
-        [PrefixMethod]
-        [TargetMethod(Type = typeof(MyMultiplayerBase), Method = "OnWorldRequest")]
-        private static bool PatchGetWorld(EndpointId sender) {
+        //[PrefixMethod]
+        [TargetMethod(Type = typeof(MyMultiplayerServerBase), Method = "OnWorldRequest")]
+        public static bool PatchGetWorld(EndpointId sender) {
             bridge = new Bridge(Plugin);
 
-            Log.Info($"World request received: {MyMultiplayer.Static.GetMemberName(sender.Value)}");
+            Log.Info($"Patched World request received: {MyMultiplayer.Static.GetMemberName(sender.Value)}");
 
             if (!bridge.Ready) {
-                var _raiseClientLeft = typeof(MyMultiplayerBase).GetMethod("RaiseClientLeft", BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.Static | BindingFlags.Public);
+                var _raiseClientLeft = typeof(MyMultiplayerServerBase).GetMethod("RaiseClientLeft", BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.Static | BindingFlags.Public);
                 _raiseClientLeft.Invoke(null, new object[] { MyMultiplayer.Static, sender.Value, MyChatMemberStateChangeEnum.Disconnected });
                 return false;
             }

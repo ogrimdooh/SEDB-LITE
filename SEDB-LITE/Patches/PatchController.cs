@@ -11,7 +11,7 @@ namespace SEDB_LITE {
 
     public static class PatchController {
         public static MyLog Log = new MyLog();
-
+        public static dynamic CastedClas = null;
         public class TargetMethod : Attribute {
             public Type Type { get; set; }
             public string Method { get; set; }
@@ -33,7 +33,8 @@ namespace SEDB_LITE {
             Log.WriteLineAndConsole("Patching methods...");
             var assembly = Assembly.GetExecutingAssembly();
 
-            foreach(var PatchingClass in GetPatchingClasses(assembly)) {
+            foreach(var PatchingClass in GetPatchingClassesAndInitalize(assembly)) {
+
                 foreach (var method in PatchingClass.GetMethods().Where(x => x.GetCustomAttributes(typeof(PrefixMethod), false).FirstOrDefault() != null)) {
                     Patch(method, typeof(PrefixMethod));
                 }
@@ -47,6 +48,16 @@ namespace SEDB_LITE {
         public static void Patch(MethodInfo newMethod,Type typeOfPatch) {
             var harmony = new Harmony("SEDB-LITE");
             TargetMethod TargetMethodData = (TargetMethod)newMethod.GetCustomAttribute(typeof(TargetMethod));
+
+            if (Plugin.DEBUG) {
+
+                var methods = TargetMethodData.Type.GetMethods(BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.Static | BindingFlags.Public);
+                Log.WriteLineAndConsole($"Listing methods in {TargetMethodData.Type.Name}");
+                foreach (var method in methods) {
+                    Log.WriteLineAndConsole($"Method name: {method.Name}");
+                }
+            }
+
             Log.WriteLineAndConsole($"Patching {TargetMethodData.Method} with {newMethod.Name} (Prefix)");
 
             if (typeOfPatch == typeof(PrefixMethod)) {
@@ -59,9 +70,15 @@ namespace SEDB_LITE {
             }
         }
 
-        public static IEnumerable<Type> GetPatchingClasses(Assembly assembly) {
+        public static IEnumerable<Type> GetPatchingClassesAndInitalize(Assembly assembly) {
             foreach (Type type in assembly.GetTypes()) {
                 if (type.GetCustomAttributes(typeof(PatchingClass), true).Length > 0) {
+
+                    Activator.CreateInstance(type, Plugin.PluginInstance);
+                    if (Plugin.DEBUG) {
+                        Log.WriteLineAndConsole($"Found patching class: {type.Name}");
+
+                    }
                     yield return type;
                 }
             }

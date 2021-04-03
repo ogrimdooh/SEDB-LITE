@@ -18,20 +18,17 @@ namespace SEDB_LITE {
     public class Plugin : IConfigurablePlugin {
         public SEDB_LiteConfig m_configuration;
         public static MyLog Log = new MyLog();
+        public static Plugin PluginInstance;
         public Bridge DDBridge;
-        public Patches.ChatPatch chatPatch;
-        public Patches.PlayerJoinedPatch PlayerJoinedPatch;
-
+        public static bool DEBUG = false;
 
         public void Init(object gameInstance) {
+            PluginInstance = this;
             var harmony = new Harmony("SEDB-LITE");
-
-            chatPatch = new Patches.ChatPatch(this);
-            PlayerJoinedPatch = new Patches.PlayerJoinedPatch(this);
             try {
                 PatchController.PatchMethods();
             } catch(Exception e) {
-                Log.WriteLineAndConsole($"PATCHING FAILED {e.ToString()}");
+                Log.WriteLineAndConsole($"PATCHING FAILED {e}");
             }
 
             try {
