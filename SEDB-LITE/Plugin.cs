@@ -21,7 +21,7 @@ namespace SEDB_LITE {
         public static Plugin PluginInstance;
         public Bridge DDBridge;
         public static bool Ready = false;
-        public static bool DEBUG = false;
+        public static bool DEBUG = true;
 
         public void Init(object gameInstance) {
             PluginInstance = this;
@@ -44,6 +44,7 @@ namespace SEDB_LITE {
 
                     DDBridge = new Bridge(this);
                     Ready = true;
+                    DDBridge.SendStatusMessage(default, default, m_configuration.ServerStartedMessage);
                     if (m_configuration.UseStatus)
                         DDBridge.StartTimer();
 
@@ -76,7 +77,8 @@ namespace SEDB_LITE {
         }
 
         public void Dispose() {
-
+            Log.WriteLineAndConsole("Unloading SEDB Lite!");
+            DDBridge.SendStatusMessage(default, default, m_configuration.ServerStoppedMessage);
         }
 
         public string GetPluginTitle() {

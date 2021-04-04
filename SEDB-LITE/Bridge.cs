@@ -46,6 +46,7 @@ namespace SEDB_LITE {
 
 
         private Task RegisterDiscord() {
+            Log.WriteLineAndConsole("Registering discord!");
             Discord = new DiscordClient(new DiscordConfiguration {
                 Token = Plugin.m_configuration.Token,
                 TokenType = TokenType.Bot
@@ -54,7 +55,6 @@ namespace SEDB_LITE {
             Discord.ConnectAsync();
 
             Discord.MessageCreated += Discord_MessageCreated;
-
             Discord.Ready += async (c,e) => {
                 await Task.CompletedTask;
             };
@@ -62,11 +62,17 @@ namespace SEDB_LITE {
         }
 
         private Task Discord_MessageCreated(DiscordClient discord, DSharpPlus.EventArgs.MessageCreateEventArgs e) {
+            if (Plugin.DEBUG)
+                Log.WriteLineToConsole("Discord message received!");
+
             if (!e.Author.IsBot && Plugin.m_configuration.DiscordToGame) {
                 if (Plugin.m_configuration.ChannelID.Contains(e.Channel.Id.ToString())) {
                     string sender = e.Guild.GetMemberAsync(e.Author.Id).Result.Username;
-
                     var dSender = Plugin.m_configuration.DiscordChatAuthorFormat.Replace("{p}", sender);
+
+                    //Fix potential message event duplication?
+                    if (lastMessage.Equals(dSender + e.Message.Content)) return Task.CompletedTask;
+
                     lastMessage = dSender + e.Message.Content;
                     MyVisualScriptLogicProvider.SendChatMessageColored(e.Message.Content, VRageMath.Color.MediumPurple, dSender, default, Plugin.m_configuration.GlobalColor);
                   
@@ -86,7 +92,7 @@ namespace SEDB_LITE {
         }
 
 
-        public async void SendStatusMessage(string user, ulong steamID, string msg) {
+        public async void SendStatusMessage(string user = null, ulong steamID = 0L , string msg = null) {
             if (Plugin.Ready && Plugin.m_configuration.ChannelID.Length > 0) {
                 try {
                     DiscordChannel chann = Discord.GetChannelAsync(ulong.Parse(Plugin.m_configuration.ChannelID)).Result;

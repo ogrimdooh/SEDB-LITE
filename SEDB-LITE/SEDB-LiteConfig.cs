@@ -60,6 +60,16 @@ namespace SEDB_LITE {
         [Browsable(false)]
         public string DisconnectedMessage = ":new_moon: {p} left the server";
 
+        [Display(Name = "Message that is displayed when server starts")]
+        [Category("General")]
+        [Browsable(false)]
+        public string ServerStartedMessage = ":white_check_mark: Server Started!";
+
+        [Display(Name = "Message that is displayed when the server stops")]
+        [Category("General")]
+        [Browsable(false)]
+        public string ServerStoppedMessage = ":x: Server Stopped!";
+
         [Display(Name = "Send messages into game as Server")]
         [Category("General")]
         [Browsable(false)]

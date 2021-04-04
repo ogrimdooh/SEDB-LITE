@@ -25,7 +25,7 @@ namespace SEDB_LITE.Patches {
         }
 
         [PrefixMethod]
-        [TargetMethod(Type = typeof(MyDedicatedServerBase), Method = "OnDisconnectedClient")]
+        [TargetMethod(Type = typeof(MyMultiplayerBase), Method = "OnDisconnectedClient")]
         public static void PlayerDisconnected(ref MyControlDisconnectedMsg data, ulong sender) {
 
             try {
