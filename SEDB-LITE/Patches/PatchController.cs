@@ -48,16 +48,6 @@ namespace SEDB_LITE {
         public static void Patch(MethodInfo newMethod,Type typeOfPatch) {
             var harmony = new Harmony("SEDB-LITE");
             TargetMethod TargetMethodData = (TargetMethod)newMethod.GetCustomAttribute(typeof(TargetMethod));
-
-            if (Plugin.DEBUG) {
-
-                var methods = TargetMethodData.Type.GetMethods(BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.Static | BindingFlags.Public);
-                Log.WriteLineAndConsole($"Listing methods in {TargetMethodData.Type.Name}");
-                foreach (var method in methods) {
-                    Log.WriteLineAndConsole($"Method name: {method.Name}");
-                }
-            }
-
             Log.WriteLineAndConsole($"Patching {TargetMethodData.Method} with {newMethod.Name} (Prefix)");
 
             if (typeOfPatch == typeof(PrefixMethod)) {

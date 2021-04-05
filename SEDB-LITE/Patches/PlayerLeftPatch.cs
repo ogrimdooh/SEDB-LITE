@@ -25,7 +25,7 @@ namespace SEDB_LITE.Patches {
         }
 
         [PrefixMethod]
-        [TargetMethod(Type = typeof(MyDedicatedServerBase), Method = "MyDedicatedServer_ClientLeft")]
+        [TargetMethod(Type = typeof(MyMultiplayerBase), Method = "MyDedicatedServer_ClientLeft")]
         public static void PlayerDisconnected(ulong user, MyChatMemberStateChangeEnum arg2) {
 
             try {

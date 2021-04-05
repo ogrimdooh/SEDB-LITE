@@ -44,6 +44,8 @@ namespace SEDB_LITE {
                     DDBridge = new Bridge(this);
                     if (m_configuration.UseStatus)
                         DDBridge.StartTimer();
+                    DDBridge.SendStatusMessage(default, default, m_configuration.ServerStartedMessage);
+
 
                 }
             } catch (Exception e) {
