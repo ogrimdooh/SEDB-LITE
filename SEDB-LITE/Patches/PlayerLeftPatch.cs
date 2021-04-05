@@ -25,13 +25,13 @@ namespace SEDB_LITE.Patches {
         }
 
         [PrefixMethod]
-        [TargetMethod(Type = typeof(MyMultiplayerBase), Method = "OnDisconnectedClient")]
-        public static void PlayerDisconnected(ref MyControlDisconnectedMsg data, ulong sender) {
+        [TargetMethod(Type = typeof(MyDedicatedServerBase), Method = "MyDedicatedServer_ClientLeft")]
+        public static void PlayerDisconnected(ulong user, MyChatMemberStateChangeEnum arg2) {
 
             try {
-                string playerName = Utilities.GetPlayerName(sender);
+                string playerName = Utilities.GetPlayerName(user);
                 if (!(playerName.StartsWith("[") && playerName.EndsWith("]") && playerName.Contains("...")))
-                    Task.Run(async () => Plugin.ProcessStatusMessage(playerName, sender, Plugin.m_configuration.DisconnectedMessage));
+                    Task.Run(async () => Plugin.ProcessStatusMessage(playerName, user, Plugin.m_configuration.DisconnectedMessage));
             }
             catch (Exception e) {
                 Log.WriteLineAndConsole(e.ToString());

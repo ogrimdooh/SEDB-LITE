@@ -20,8 +20,7 @@ namespace SEDB_LITE {
         public static MyLog Log = new MyLog();
         public static Plugin PluginInstance;
         public Bridge DDBridge;
-        public static bool Ready = false;
-        public static bool DEBUG = true;
+        public static bool DEBUG = false;
 
         public void Init(object gameInstance) {
             PluginInstance = this;
@@ -43,8 +42,6 @@ namespace SEDB_LITE {
                     }
 
                     DDBridge = new Bridge(this);
-                    Ready = true;
-                    DDBridge.SendStatusMessage(default, default, m_configuration.ServerStartedMessage);
                     if (m_configuration.UseStatus)
                         DDBridge.StartTimer();
 
