@@ -6,3 +6,10 @@
 /packages
 /SEDB-LITE/bin/Debug
 /SEDB-LITE/obj/Debug
+/.vs
+/SEDB-LITE/bin/Release
+/SEDB-LITE/obj/Release
+/SEDB-LITE/DiscordBridge.cs
+/SEDB-LITE/obj/x64
+/SEDB-LITE/bin/x64/Debug
+/SEDB-LITE/bin/x64/Release
