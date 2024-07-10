@@ -74,6 +74,16 @@ namespace SEDB_LITE
         [Browsable(false)]
         public string ServerStoppedMessage = ":x: Server Stopped!";
 
+        [Display(Name = "Message that is displayed when the player respawn")]
+        [Category("General")]
+        [Browsable(false)]
+        public string RespawnMessage = ":wheel: The player {p} has respawn in a rover.";
+
+        [Display(Name = "Message that is displayed when the player dies")]
+        [Category("General")]
+        [Browsable(false)]
+        public string DieMessage = ":skull: The player {p} has died.";
+
         [Display(Name = "Send messages into game as Server")]
         [Category("General")]
         [Browsable(false)]

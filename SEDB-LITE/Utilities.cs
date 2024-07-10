@@ -20,10 +20,16 @@ namespace SEDB_LITE
 
         public static string GetPlayerName(long identityId)
         {
-            var identity = MySession.Static.Players.TryGetIdentity(identityId);
-            if (identity == null)
-                return identityId.ToString();
-            return identity.DisplayName;
+            MyPlayer.PlayerId id;
+            if (MySession.Static.Players.TryGetPlayerId(identityId, out id))
+            {
+                var player = MySession.Static.Players.GetPlayerById(id);
+                if (!string.IsNullOrWhiteSpace(player.DisplayName))
+                {
+                    return player.DisplayName;
+                }
+            }
+            return identityId.ToString();
         }
     }
 

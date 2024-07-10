@@ -13,9 +13,84 @@ using VRage.Utils;
 using Sandbox.Engine.Multiplayer;
 
 using System.Reflection;
+using Sandbox.Game;
+using Sandbox.Engine.Utils;
+using Sandbox.Game.World;
+using System.Windows.Input;
+using VRage.Game.ModAPI;
 
 namespace SEDB_LITE
 {
+
+    public static class GameWatcherController
+    {
+
+        public static void Init()
+        {
+            MyEntities.OnEntityAdd += MyEntities_OnEntityAdd;
+            MyVisualScriptLogicProvider.PlayerDied += MyPlayer_Die;
+        }
+
+        public static void Dispose()
+        {
+            MyEntities.OnEntityAdd -= MyEntities_OnEntityAdd;
+            MyVisualScriptLogicProvider.PlayerDied -= MyPlayer_Die;
+        }
+
+        private static void MyEntities_OnEntityAdd(VRage.Game.Entity.MyEntity obj)
+        {
+            try
+            {
+                if (!Plugin.PluginInstance.m_configuration.Enabled) return;
+
+                var cubeGrid = obj as IMyCubeGrid;
+                if (cubeGrid != null)
+                {
+                    if (cubeGrid.IsRespawnGrid && cubeGrid.BigOwners.Any())
+                    {
+                        var playerId = cubeGrid.BigOwners[0];
+                        MyPlayer.PlayerId id;
+                        if (MySession.Static.Players.TryGetPlayerId(playerId, out id))
+                        {
+                            var player = MySession.Static.Players.GetPlayerById(id);
+                            if (!string.IsNullOrWhiteSpace(player.DisplayName))
+                            {
+                                Plugin.PluginInstance.DDBridge.SendStatusMessage(player.DisplayName, player.Id.SteamId, Plugin.PluginInstance.m_configuration.RespawnMessage);
+                            }
+                        }
+                    }
+                }
+            }
+            catch (Exception e)
+            {
+                Logging.Instance.LogError(typeof(GameWatcherController), e);
+            }
+        }
+
+        private static void MyPlayer_Die(long playerId)
+        {
+            try
+            {
+                if (!Plugin.PluginInstance.m_configuration.Enabled) return;
+
+                MyPlayer.PlayerId id;
+                if (MySession.Static.Players.TryGetPlayerId(playerId, out id))
+                {
+                    var player = MySession.Static.Players.GetPlayerById(id);
+                    if (!string.IsNullOrWhiteSpace(player.DisplayName))
+                    {
+                        Plugin.PluginInstance.DDBridge.SendStatusMessage(player.DisplayName, player.Id.SteamId, Plugin.PluginInstance.m_configuration.DieMessage);
+                    }
+                }
+            }
+            catch (Exception e)
+            {
+                Logging.Instance.LogError(typeof(GameWatcherController), e);
+            }
+        }
+
+    } 
+
     public class Plugin : IConfigurablePlugin
     {
         public SEDB_LiteConfig m_configuration;
@@ -34,6 +109,15 @@ namespace SEDB_LITE
             catch (Exception e)
             {
                 Logging.Instance.LogError(GetType(), e, "PATCHING FAILED ");
+            }
+
+            try
+            {
+                GameWatcherController.Init();
+            }
+            catch (Exception e)
+            {
+                Logging.Instance.LogError(GetType(), e, "WATCHER FAILED ");
             }
 
             try
@@ -99,11 +183,19 @@ namespace SEDB_LITE
         {
             Logging.Instance.LogInfo(GetType(), "Unloading SEDB Lite!");
             DDBridge.SendStatusMessage(default, default, m_configuration.ServerStoppedMessage);
+            try
+            {
+                GameWatcherController.Dispose();
+            }
+            catch (Exception e)
+            {
+                Logging.Instance.LogError(GetType(), e);
+            }
         }
 
         public string GetPluginTitle()
         {
-            return "SEDiscordBridge - Lite! v1.0.2.0";
+            return "SEDiscordBridge - Lite! v1.0.3.0";
         }
 
         public Task ProcessStatusMessage(string user, ulong player, string message)

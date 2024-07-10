@@ -10,12 +10,16 @@ namespace SEDB_LITE
     public static class MsgWorker
     {
 
+        private const int NORMAL_LIVE = 1500;
+        private const int LONG_LIVE = 5000;
+
         public struct DiscordMessage
         {
 
             public DiscordChannel Chann { get; set; }
             public string Message { get; set; }
             public DateTime Time { get; set; }
+            public bool LongLive { get; set; }
 
         }
         
@@ -59,7 +63,7 @@ namespace SEDB_LITE
                     }
                     if (lastMessages.Any())
                     {
-                        lastMessages.RemoveAll(x => (DateTime.Now - x.Time).TotalMilliseconds > 1500);
+                        lastMessages.RemoveAll(x => (DateTime.Now - x.Time).TotalMilliseconds > (x.LongLive ? LONG_LIVE : NORMAL_LIVE));
                     }
                 }
                 catch (Exception ex)
@@ -89,13 +93,14 @@ namespace SEDB_LITE
             }
         }
 
-        public static void SendToDiscord(DiscordChannel chann, string msg)
+        public static void SendToDiscord(DiscordChannel chann, string msg, bool longLive)
         {
             messagesToSend.Enqueue(new DiscordMessage()
             {
                 Chann = chann,
                 Message = msg,
-                Time = DateTime.Now
+                Time = DateTime.Now,
+                LongLive = longLive
             });
             if (Plugin.DEBUG)
             {

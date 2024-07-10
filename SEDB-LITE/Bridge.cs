@@ -45,7 +45,7 @@ namespace SEDB_LITE
             });
 
             Discord.ConnectAsync();
-
+             
             Discord.MessageCreated += Discord_MessageCreated;
             Discord.Ready += async (c, e) =>
             {
@@ -104,11 +104,14 @@ namespace SEDB_LITE
                         if (user.StartsWith("ID:"))
                             return;
 
-                        user = $"{user} ({steamID.ToString()})";
+                        if (Plugin.m_configuration.DisplaySteamID)
+                        {
+                            user = $"{user} ({steamID.ToString()})";
+                        }
 
                         msg = msg.Replace("{p}", user).Replace("{ts}", TimeZone.CurrentTimeZone.ToLocalTime(DateTime.Now).ToString());
                     }
-                    MsgWorker.SendToDiscord(chann, msg.Replace("/n", "\n"));
+                    MsgWorker.SendToDiscord(chann, msg.Replace("/n", "\n"), true);
                 }
                 catch (Exception e)
                 {
@@ -133,7 +136,7 @@ namespace SEDB_LITE
                     }
                     try
                     {
-                        MsgWorker.SendToDiscord(chann, msg.Replace("/n", "\n"));
+                        MsgWorker.SendToDiscord(chann, msg.Replace("/n", "\n"), false);
                     }
                     catch (DSharpPlus.Exceptions.RateLimitException)
                     {

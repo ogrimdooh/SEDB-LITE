@@ -11,6 +11,7 @@ using SEDB_LITE;
 using Sandbox.Game.Gui;
 using VRage.Utils;
 using static SEDB_LITE.PatchController;
+using Sandbox.Game.World;
 
 namespace SEDB_LITE.Patches
 {
@@ -33,7 +34,9 @@ namespace SEDB_LITE.Patches
         {
             try
             {
-                Task.Run(async () => await Plugin.ProcessStatusMessage(userName, changedUser, Plugin.m_configuration.ConnectedMessage));
+                string playerName = Utilities.GetPlayerName(changedUser);
+                if (!(playerName.StartsWith("[") && playerName.EndsWith("]") && playerName.Contains("...")))
+                    Task.Run(async () => await Plugin.ProcessStatusMessage(playerName, changedUser, Plugin.m_configuration.ConnectedMessage));
             }
             catch (Exception e)
             {
