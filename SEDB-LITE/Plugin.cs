@@ -14,30 +14,38 @@ using Sandbox.Engine.Multiplayer;
 
 using System.Reflection;
 
-namespace SEDB_LITE {
-    public class Plugin : IConfigurablePlugin {
+namespace SEDB_LITE
+{
+    public class Plugin : IConfigurablePlugin
+    {
         public SEDB_LiteConfig m_configuration;
-        public static MyLog Log = new MyLog();
         public static Plugin PluginInstance;
         public Bridge DDBridge;
         public static bool DEBUG = false;
 
-        public void Init(object gameInstance) {
+        public void Init(object gameInstance)
+        {
             PluginInstance = this;
             var harmony = new Harmony("SEDB-LITE");
-            try {
+            try
+            {
                 PatchController.PatchMethods();
-            } catch(Exception e) {
-                Log.WriteLineAndConsole($"PATCHING FAILED {e}");
+            }
+            catch (Exception e)
+            {
+                Logging.Instance.LogError(GetType(), e, "PATCHING FAILED ");
             }
 
-            try {
+            try
+            {
                 GetConfiguration(VRage.FileSystem.MyFileSystem.UserDataPath);
-                Log.WriteLineAndConsole("Starting Discord Bridge!");
-                if (m_configuration.Enabled) {
+                Logging.Instance.LogInfo(GetType(), "Starting Discord Bridge!");
+                if (m_configuration.Enabled)
+                {
 
-                    if (m_configuration.Token.Length <= 0) {
-                        Log.Error("No BOT token set, plugin will not work at all! Add your bot TOKEN, Update the configuration and restart the server");
+                    if (m_configuration.Token.Length <= 0)
+                    {
+                        Logging.Instance.LogWarning(GetType(), "No BOT token set, plugin will not work at all! Add your bot TOKEN, Update the configuration and restart the server");
                         return;
                     }
 
@@ -48,53 +56,68 @@ namespace SEDB_LITE {
 
 
                 }
-            } catch (Exception e) {
-                Log.WriteLineAndConsole(e.ToString());
+            }
+            catch (Exception e)
+            {
+                Logging.Instance.LogError(GetType(), e);
             }
         }
 
-        public void Update() {
-            
+        public void Update()
+        {
+
         }
 
-        public IPluginConfiguration GetConfiguration(string userDataPath) {
-            if (m_configuration == null) {
+        public IPluginConfiguration GetConfiguration(string userDataPath)
+        {
+            if (m_configuration == null)
+            {
                 string configFile = Path.Combine(userDataPath, "SEDB-Lite.cfg");
-                if (File.Exists(configFile)) {
+                if (File.Exists(configFile))
+                {
                     XmlSerializer serializer = new XmlSerializer(typeof(SEDB_LITE.SEDB_LiteConfig));
-                    using (FileStream stream = File.OpenRead(configFile)) {
+                    using (FileStream stream = File.OpenRead(configFile))
+                    {
                         m_configuration = serializer.Deserialize(stream) as SEDB_LITE.SEDB_LiteConfig;
                     }
                 }
+                else
+                {
+                    Logging.Instance.LogWarning(GetType(), $"Config file not found {configFile}!");
+                }
 
-                if (m_configuration == null) {
-                    m_configuration = new SEDB_LITE.SEDB_LiteConfig();
+                if (m_configuration == null)
+                {
+                    m_configuration = new SEDB_LiteConfig();
                 }
             }
 
             return m_configuration;
         }
 
-        public void Dispose() {
-            Log.WriteLineAndConsole("Unloading SEDB Lite!");
+        public void Dispose()
+        {
+            Logging.Instance.LogInfo(GetType(), "Unloading SEDB Lite!");
             DDBridge.SendStatusMessage(default, default, m_configuration.ServerStoppedMessage);
         }
 
-        public string GetPluginTitle() {
-            return "SEDiscordBridge - Lite! v1.001";
+        public string GetPluginTitle()
+        {
+            return "SEDiscordBridge - Lite! v1.0.2.0";
         }
 
-
-        public Task ProcessStatusMessage(string user, ulong player, string message) {
+        public Task ProcessStatusMessage(string user, ulong player, string message)
+        {
             DDBridge.SendStatusMessage(user, player, message);
             return Task.CompletedTask;
         }
 
-        public Task ProcessAsync(ChatMsg msg) {
-            switch (msg.Channel) {
+        public Task ProcessAsync(ChatMsg msg)
+        {
+            switch (msg.Channel)
+            {
                 case ChatChannel.Global:
-                    DDBridge.SendChatMessage(msg.AuthorName, msg.Text);
-                    break;
+                    return DDBridge.SendChatMessage(msg.AuthorName, msg.Text);
 
                 case ChatChannel.GlobalScripted:
                     break;

@@ -12,25 +12,35 @@ using Sandbox.Game.Gui;
 using VRage.Utils;
 using static SEDB_LITE.PatchController;
 
-namespace SEDB_LITE.Patches {
-    [PatchingClass]
-    public class PlayerJoinedPatch {
-        private static Plugin Plugin;
-        public static MyLog Log = new MyLog();
+namespace SEDB_LITE.Patches
+{
 
-        public PlayerJoinedPatch(Plugin plugin) {
+    [PatchingClass]
+    public class PlayerJoinedPatch
+    {
+
+        private static Plugin Plugin;
+
+        public PlayerJoinedPatch(Plugin plugin)
+        {
             Plugin = plugin;
         }
 
 
         [PrefixMethod]
         [TargetMethod(Type = typeof(MyMultiplayerBase), Method = "RaiseClientJoined")]
-        public static void PlayerConnected(ulong changedUser, string userName) {
-            try {
-                Task.Run(async () => Plugin.ProcessStatusMessage(userName, changedUser, Plugin.m_configuration.ConnectedMessage));
-            } catch(Exception e) {
-                Log.WriteLineAndConsole(e.ToString());
+        public static void PlayerConnected(ulong changedUser, string userName)
+        {
+            try
+            {
+                Task.Run(async () => await Plugin.ProcessStatusMessage(userName, changedUser, Plugin.m_configuration.ConnectedMessage));
+            }
+            catch (Exception e)
+            {
+                Logging.Instance.LogError(typeof(PlayerJoinedPatch), e);
             }
         }
+
     }
+
 }

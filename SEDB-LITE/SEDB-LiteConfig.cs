@@ -18,8 +18,12 @@ using VRage.Game;
 using VRage.ObjectBuilders;
 using VRage.Plugins;
 
-namespace SEDB_LITE {
-    public class SEDB_LiteConfig : IPluginConfiguration {
+namespace SEDB_LITE
+{
+
+    public class SEDB_LiteConfig : IPluginConfiguration
+    {
+
         [Display(Name = "Enabled", Order = 1)]
         [Category("General")]
         [Description("Enable/Disable the Plugin...")]
@@ -93,13 +97,17 @@ namespace SEDB_LITE {
         [Browsable(false)]
         public bool DebugMode = false;
 
-        public void Save(string userDataPath) {
+        public void Save(string userDataPath)
+        {
             XmlSerializer serializer = new XmlSerializer(typeof(SEDB_LiteConfig));
 
             string configFile = Path.Combine(userDataPath, "SEDB-Lite.cfg");
-            using (StreamWriter stream = new StreamWriter(configFile, false, Encoding.UTF8)) {
+            using (StreamWriter stream = new StreamWriter(configFile, false, Encoding.UTF8))
+            {
                 serializer.Serialize(stream, this);
             }
         }
+
     }
+
 }

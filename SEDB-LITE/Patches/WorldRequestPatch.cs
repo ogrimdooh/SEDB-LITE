@@ -16,26 +16,30 @@ using Sandbox;
 using VRage.Network;
 using System.Reflection;
 
-namespace SEDB_LITE.Patches {
+namespace SEDB_LITE.Patches
+{
+
     [PatchingClass]
-    public class WorldRequestPatch {
+    public class WorldRequestPatch
+    {
         private static Plugin Plugin;
-        public static MyLog Log = new MyLog();
         public static Bridge bridge;
 
-        public WorldRequestPatch(Plugin plugin) {
+        public WorldRequestPatch(Plugin plugin)
+        {
             Plugin = plugin;
         }
 
-
         //[PrefixMethod]
         [TargetMethod(Type = typeof(MyMultiplayerServerBase), Method = "OnWorldRequest")]
-        public static bool PatchGetWorld(EndpointId sender) {
+        public static bool PatchGetWorld(EndpointId sender)
+        {
             bridge = new Bridge(Plugin);
 
-            Log.Info($"Patched World request received: {MyMultiplayer.Static.GetMemberName(sender.Value)}");
+            Logging.Instance.LogInfo(typeof(WorldRequestPatch), $"Patched World request received: {MyMultiplayer.Static.GetMemberName(sender.Value)}");
 
-            if (!bridge.Ready) {
+            if (!Bridge.Ready)
+            {
                 var _raiseClientLeft = typeof(MyMultiplayerServerBase).GetMethod("RaiseClientLeft", BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.Static | BindingFlags.Public);
                 _raiseClientLeft.Invoke(null, new object[] { MyMultiplayer.Static, sender.Value, MyChatMemberStateChangeEnum.Disconnected });
                 return false;
@@ -43,4 +47,5 @@ namespace SEDB_LITE.Patches {
             return true;
         }
     }
+
 }
