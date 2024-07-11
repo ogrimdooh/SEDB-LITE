@@ -12,7 +12,7 @@ namespace SEDB_LITE
     {
         public static string GetPlayerName(ulong steamId)
         {
-            long identityId = MySession.Static.Players.TryGetIdentityId(steamId);
+            long identityId = MySession.Static != null ? MySession.Static.Players.TryGetIdentityId(steamId) : 0;
             if (identityId == 0)
                 return steamId.ToString();
             return GetPlayerName(identityId);
@@ -20,13 +20,16 @@ namespace SEDB_LITE
 
         public static string GetPlayerName(long identityId)
         {
-            MyPlayer.PlayerId id;
-            if (MySession.Static.Players.TryGetPlayerId(identityId, out id))
+            if (MySession.Static != null)
             {
-                var player = MySession.Static.Players.GetPlayerById(id);
-                if (!string.IsNullOrWhiteSpace(player.DisplayName))
+                MyPlayer.PlayerId id;
+                if (MySession.Static.Players.TryGetPlayerId(identityId, out id))
                 {
-                    return player.DisplayName;
+                    var player = MySession.Static.Players.GetPlayerById(id);
+                    if (!string.IsNullOrWhiteSpace(player.DisplayName))
+                    {
+                        return player.DisplayName;
+                    }
                 }
             }
             return identityId.ToString();

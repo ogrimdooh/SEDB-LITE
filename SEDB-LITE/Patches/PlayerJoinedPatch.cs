@@ -34,9 +34,7 @@ namespace SEDB_LITE.Patches
         {
             try
             {
-                string playerName = Utilities.GetPlayerName(changedUser);
-                if (!(playerName.StartsWith("[") && playerName.EndsWith("]") && playerName.Contains("...")))
-                    Task.Run(async () => await Plugin.ProcessStatusMessage(playerName, changedUser, Plugin.m_configuration.ConnectedMessage));
+                Task.Run(async () => await Plugin.ProcessStatusMessage(userName.Replace("", ""), changedUser, Plugin.m_configuration.ConnectedMessage));
             }
             catch (Exception e)
             {
