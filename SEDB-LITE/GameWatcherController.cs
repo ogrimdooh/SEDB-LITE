@@ -29,7 +29,14 @@ namespace SEDB_LITE
                 MySession.Static.Factions.FactionStateChanged += Factions_FactionStateChanged;
                 Logging.Instance.LogInfo(typeof(GameWatcherController), "Added Watcher to GpsAdded");
                 MySession.Static.Gpss.GpsAdded += Gpss_GpsAdded;
+                Logging.Instance.LogInfo(typeof(GameWatcherController), "Added Watcher to MySession OnReady");
+                MySession.Static.OnReady += Static_OnReady;
             }
+        }
+
+        private static void Static_OnReady()
+        {
+            Plugin.PluginInstance.DDBridge.SendStatusMessage(default, default, Plugin.PluginInstance.m_configuration.ServerStartedMessage);
         }
 
         private static void Gpss_GpsAdded(long playerId, int gps)

@@ -13,6 +13,7 @@ using Sandbox.Engine.Multiplayer;
 using System.Reflection;
 using Sandbox.Engine.Utils;
 using System.Windows.Input;
+using System.Linq;
 
 namespace SEDB_LITE
 {
@@ -22,7 +23,16 @@ namespace SEDB_LITE
         public SEDB_LiteConfig m_configuration;
         public static Plugin PluginInstance;
         public Bridge DDBridge;
-        public static bool DEBUG = false;
+
+        public static bool DEBUG
+        {
+            get
+            {
+                if (PluginInstance != null)
+                    return PluginInstance.m_configuration?.DebugMode ?? false;
+                return false;
+            }
+        }
 
         public void Init(object gameInstance)
         {
@@ -62,8 +72,6 @@ namespace SEDB_LITE
                     DDBridge = new Bridge(this);
                     if (m_configuration.UseStatus)
                         DDBridge.StartTimer();
-                    DDBridge.SendStatusMessage(default, default, m_configuration.ServerStartedMessage);
-
 
                 }
             }
@@ -121,12 +129,43 @@ namespace SEDB_LITE
 
         public string GetPluginTitle()
         {
-            return "SEDiscordBridge - Lite! v1.0.3.3";
+            return "SEDiscordBridge - Lite! v1.0.3.4";
         }
 
         public Task ProcessStatusMessage(string user, ulong player, string message)
         {
             DDBridge.SendStatusMessage(user, player, message);
+            return Task.CompletedTask;
+        }
+
+        public Task ProcessCommandAsync(ChatCommand command)
+        {
+            try
+            {
+                if (DEBUG)
+                {
+                    Logging.Instance.LogDebug(GetType(), $"ProcessCommandAsync : {string.Join(" ", command.Arguments)}");
+                }
+                if (command.Arguments != null && command.Arguments.Length > 0)
+                {
+                    switch (command.Arguments[0].ToLower())
+                    {
+                        case "set":
+                            if (command.Arguments.Length >= 3)
+                            {
+                                if (m_configuration.Set(command.Arguments[1], string.Join(" ", command.Arguments.Skip(2))))
+                                {
+                                    m_configuration.Save(VRage.FileSystem.MyFileSystem.UserDataPath);
+                                }
+                            }
+                            break;
+                    }
+                }
+            }
+            catch (Exception e)
+            {
+                Logging.Instance.LogError(GetType(), e);
+            }
             return Task.CompletedTask;
         }
 

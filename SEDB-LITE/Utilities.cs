@@ -1,4 +1,5 @@
 ﻿using Sandbox.Game.World;
+using SEDB_LITE.Patches;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -19,9 +20,36 @@ namespace SEDB_LITE
             return defaultToUse;
         }
 
+        public static bool IsPlayerAdmin(ulong steamUserID)
+        {
+            try
+            {
+                if (MySession.Static != null)
+                {
+                    return MySession.Static.IsUserAdmin(steamUserID);
+                }
+            }
+            catch (Exception e)
+            {
+                Logging.Instance.LogError(typeof(Utilities), e);
+            }
+            return false;
+        }
+
         public static string GetPlayerName(ulong steamId)
         {
-            long identityId = MySession.Static != null ? MySession.Static.Players.TryGetIdentityId(steamId) : 0;
+            long identityId = 0;
+            try
+            {
+                if (MySession.Static?.Players != null)
+                {
+                    identityId = MySession.Static.Players.TryGetIdentityId(steamId);
+                }
+            }
+            catch (Exception e)
+            {
+                Logging.Instance.LogError(typeof(Utilities), e);
+            }
             if (identityId == 0)
                 return TryGetAsServerName(steamId.ToString());
             return GetPlayerName(identityId);
@@ -29,17 +57,24 @@ namespace SEDB_LITE
 
         public static string GetPlayerName(long identityId)
         {
-            if (MySession.Static != null)
+            try
             {
-                MyPlayer.PlayerId id;
-                if (MySession.Static.Players.TryGetPlayerId(identityId, out id))
+                if (MySession.Static?.Players != null)
                 {
-                    var player = MySession.Static.Players.GetPlayerById(id);
-                    if (!string.IsNullOrWhiteSpace(player.DisplayName))
+                    MyPlayer.PlayerId id;
+                    if (MySession.Static.Players.TryGetPlayerId(identityId, out id))
                     {
-                        return player.DisplayName;
+                        var player = MySession.Static.Players.GetPlayerById(id);
+                        if (!string.IsNullOrWhiteSpace(player.DisplayName))
+                        {
+                            return player.DisplayName;
+                        }
                     }
                 }
+            }
+            catch (Exception e)
+            {
+                Logging.Instance.LogError(typeof(Utilities), e);
             }
             return TryGetAsServerName(identityId.ToString());
         }

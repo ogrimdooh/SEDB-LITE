@@ -11,6 +11,7 @@ using SEDB_LITE;
 using Sandbox.Game.Gui;
 using VRage.Utils;
 using static SEDB_LITE.PatchController;
+using System.Windows.Interop;
 
 namespace SEDB_LITE.Patches
 {
@@ -30,9 +31,17 @@ namespace SEDB_LITE.Patches
         [TargetMethod(Type = typeof(MyMultiplayerBase), Method = "RaiseChatMessageReceived")]
         public static void ProcessChat(ulong steamUserID, string messageText, ChatChannel channel, long targetId, string customAuthorName = null)
         {
-            string playerName = Utilities.GetPlayerName(steamUserID);
-            ChatMsg msg = new ChatMsg() { Author = steamUserID, AuthorName = playerName, Text = messageText, Channel = channel, Target = targetId, CustomAuthor = customAuthorName };
-            Task.Run(async () => await Plugin.ProcessAsync(msg));
+            if (messageText.StartsWith("!SEDB") && Utilities.IsPlayerAdmin(steamUserID))
+            {
+                var command = new ChatCommand() { Author = steamUserID, Arguments = messageText.Split(' ').Skip(1).ToArray() };
+                Task.Run(async () => await Plugin.ProcessCommandAsync(command));
+            }
+            else
+            {
+                string playerName = Utilities.GetPlayerName(steamUserID);
+                ChatMsg msg = new ChatMsg() { Author = steamUserID, AuthorName = playerName, Text = messageText, Channel = channel, Target = targetId, CustomAuthor = customAuthorName };
+                Task.Run(async () => await Plugin.ProcessAsync(msg));
+            }
         }
 
     }
