@@ -36,43 +36,57 @@ namespace SEDB_LITE
 
         private static void Static_OnReady()
         {
-            Plugin.PluginInstance.DDBridge.SendStatusMessage(default, default, Plugin.PluginInstance.m_configuration.ServerStartedMessage);
+            try
+            {
+                Plugin.PluginInstance.DDBridge.SendStatusMessage(default, default, Plugin.PluginInstance.m_configuration.ServerStartedMessage);
+            }
+            catch (Exception e)
+            {
+                Logging.Instance.LogError(typeof(GameWatcherController), e);
+            }
         }
 
         private static void Gpss_GpsAdded(long playerId, int gps)
         {
-            if (!Plugin.PluginInstance.m_configuration.Enabled) return;
-
-            if (!Plugin.PluginInstance.m_configuration.DisplayContainerMessages) return;
-
-            var gpsData = MySession.Static.Gpss.GetGps(playerId, gps);
-            var gpsName = gpsData.Name.ToLower();
-            if (gpsData.IsContainerGPS && gpsName.Contains("unknown"))
+            try
             {
+                if (!Plugin.PluginInstance.m_configuration.Enabled) return;
 
-                if (Plugin.PluginInstance.m_configuration.DisplayOnlyStrongContainerMessages && !gpsName.Contains("strong")) return;                
+                if (!Plugin.PluginInstance.m_configuration.DisplayContainerMessages) return;
 
-                var msgToUse = Plugin.PluginInstance.m_configuration.ContainerMessage;
-                var finalName = string.Join(" ",
-                    gpsData.Name
-                    .Split(new[] { ' ' }, StringSplitOptions.RemoveEmptyEntries)
-                    .Reverse()
-                    .Skip(1)
-                    .Reverse()
-                    .ToArray()
-                );
-
-                msgToUse = msgToUse.Replace("{t}", finalName);
-                msgToUse = msgToUse.Replace("{c}", $"{gpsData.Coords.X}:{gpsData.Coords.Y}:{gpsData.Coords.Z}");
-                MyPlayer.PlayerId id;
-                if (MySession.Static.Players.TryGetPlayerId(playerId, out id))
+                var gpsData = MySession.Static.Gpss.GetGps(playerId, gps);
+                var gpsName = gpsData.Name.ToLower();
+                if (gpsData.IsContainerGPS && gpsName.Contains("unknown"))
                 {
-                    var player = MySession.Static.Players.GetPlayerById(id);
-                    if (!string.IsNullOrWhiteSpace(player.DisplayName))
+
+                    if (Plugin.PluginInstance.m_configuration.DisplayOnlyStrongContainerMessages && !gpsName.Contains("strong")) return;
+
+                    var msgToUse = Plugin.PluginInstance.m_configuration.ContainerMessage;
+                    var finalName = string.Join(" ",
+                        gpsData.Name
+                        .Split(new[] { ' ' }, StringSplitOptions.RemoveEmptyEntries)
+                        .Reverse()
+                        .Skip(1)
+                        .Reverse()
+                        .ToArray()
+                    );
+
+                    msgToUse = msgToUse.Replace("{t}", finalName);
+                    msgToUse = msgToUse.Replace("{c}", $"{gpsData.Coords.X}:{gpsData.Coords.Y}:{gpsData.Coords.Z}");
+                    MyPlayer.PlayerId id;
+                    if (MySession.Static.Players.TryGetPlayerId(playerId, out id))
                     {
-                        Plugin.PluginInstance.DDBridge.SendStatusMessage(player.DisplayName, player.Id.SteamId, msgToUse);
+                        var player = MySession.Static.Players.GetPlayerById(id);
+                        if (!string.IsNullOrWhiteSpace(player.DisplayName))
+                        {
+                            Plugin.PluginInstance.DDBridge.SendStatusMessage(player.DisplayName, player.Id.SteamId, msgToUse);
+                        }
                     }
                 }
+            }
+            catch (Exception e)
+            {
+                Logging.Instance.LogError(typeof(GameWatcherController), e);
             }
         }
 
@@ -163,86 +177,100 @@ namespace SEDB_LITE
 
         private static void Factions_FactionStateChanged(MyFactionStateChange action, long fromFactionId, long toFactionId, long playerId, long senderId)
         {
-            if (!Plugin.PluginInstance.m_configuration.Enabled) return;
-
-            if (!Plugin.PluginInstance.m_configuration.DisplayFactionMessages) return;
-
-            int msgType = 0;
-            if (IsFactionChangeValidToMsg(action, out msgType))
+            try
             {
-                var msgToUse = "";
-                switch (msgType)
+                if (!Plugin.PluginInstance.m_configuration.Enabled) return;
+
+                if (!Plugin.PluginInstance.m_configuration.DisplayFactionMessages) return;
+
+                int msgType = 0;
+                if (IsFactionChangeValidToMsg(action, out msgType))
                 {
-                    case 1:
-                        msgToUse = Plugin.PluginInstance.m_configuration.FactionMemberActionFactionMessage;
-                        break;
-                    case 2:
-                        msgToUse = Plugin.PluginInstance.m_configuration.FactionMemberActionMemberMessage;
-                        break;
-                    case 3:
-                        msgToUse = Plugin.PluginInstance.m_configuration.FactionRemovedMessage;
-                        break;
-                    default:
-                        msgToUse = Plugin.PluginInstance.m_configuration.FactionActionMessage;
-                        break;
-                }
-                var actionTitle = GetActionTitle(action);
-                msgToUse = msgToUse.Replace("{a}", actionTitle);
-                var fromFaction = MySession.Static.Factions.TryGetFactionById(fromFactionId);
-                if (fromFaction != null)
-                {
-                    msgToUse = msgToUse.Replace("{f}", $"[{fromFaction.Tag}] {fromFaction.Name}");
-                }
-                var toFaction = MySession.Static.Factions.TryGetFactionById(toFactionId);
-                if (toFaction != null)
-                {
-                    msgToUse = msgToUse.Replace("{f2}", $"[{toFaction.Tag}] {toFaction.Name}");
-                }
-                if (senderId != 0)
-                {
-                    var senderName = Utilities.GetPlayerName(senderId);
-                    if (!string.IsNullOrWhiteSpace(senderName))
+                    var msgToUse = "";
+                    switch (msgType)
                     {
-                        msgToUse = msgToUse.Replace("{p2}", senderName);
+                        case 1:
+                            msgToUse = Plugin.PluginInstance.m_configuration.FactionMemberActionFactionMessage;
+                            break;
+                        case 2:
+                            msgToUse = Plugin.PluginInstance.m_configuration.FactionMemberActionMemberMessage;
+                            break;
+                        case 3:
+                            msgToUse = Plugin.PluginInstance.m_configuration.FactionRemovedMessage;
+                            break;
+                        default:
+                            msgToUse = Plugin.PluginInstance.m_configuration.FactionActionMessage;
+                            break;
+                    }
+                    var actionTitle = GetActionTitle(action);
+                    msgToUse = msgToUse.Replace("{a}", actionTitle);
+                    var fromFaction = MySession.Static.Factions.TryGetFactionById(fromFactionId);
+                    if (fromFaction != null)
+                    {
+                        msgToUse = msgToUse.Replace("{f}", $"[{fromFaction.Tag}] {fromFaction.Name}");
+                    }
+                    var toFaction = MySession.Static.Factions.TryGetFactionById(toFactionId);
+                    if (toFaction != null)
+                    {
+                        msgToUse = msgToUse.Replace("{f2}", $"[{toFaction.Tag}] {toFaction.Name}");
+                    }
+                    if (senderId != 0)
+                    {
+                        var senderName = Utilities.GetPlayerName(senderId);
+                        if (!string.IsNullOrWhiteSpace(senderName))
+                        {
+                            msgToUse = msgToUse.Replace("{p2}", senderName);
+                        }
+                    }
+                    MyPlayer.PlayerId id;
+                    if (MySession.Static.Players.TryGetPlayerId(playerId, out id))
+                    {
+                        var player = MySession.Static.Players.GetPlayerById(id);
+
+                        if (player.IsBot && Plugin.PluginInstance.m_configuration.IgnoreBotInFactionMessages) return;
+
+                        if (!string.IsNullOrWhiteSpace(player.DisplayName))
+                        {
+                            Plugin.PluginInstance.DDBridge.SendStatusMessage(player.DisplayName, player.Id.SteamId, msgToUse);
+                        }
                     }
                 }
-                MyPlayer.PlayerId id;
-                if (MySession.Static.Players.TryGetPlayerId(playerId, out id))
-                {
-                    var player = MySession.Static.Players.GetPlayerById(id);
-
-                    if (player.IsBot && Plugin.PluginInstance.m_configuration.IgnoreBotInFactionMessages) return;
-
-                    if (!string.IsNullOrWhiteSpace(player.DisplayName))
-                    {
-                        Plugin.PluginInstance.DDBridge.SendStatusMessage(player.DisplayName, player.Id.SteamId, msgToUse);
-                    }
-                }
+            }
+            catch (Exception e)
+            {
+                Logging.Instance.LogError(typeof(GameWatcherController), e);
             }
         }
 
         private static void Factions_FactionCreated(long factionId)
         {
-            if (!Plugin.PluginInstance.m_configuration.Enabled) return;
-
-            if (!Plugin.PluginInstance.m_configuration.DisplayFactionMessages) return;
-
-            var faction = MySession.Static.Factions.TryGetFactionById(factionId);
-            if (faction != null)
+            try
             {
-                MyPlayer.PlayerId id;
-                if (MySession.Static.Players.TryGetPlayerId(faction.FounderId, out id))
+                if (!Plugin.PluginInstance.m_configuration.Enabled) return;
+
+                if (!Plugin.PluginInstance.m_configuration.DisplayFactionMessages) return;
+
+                var faction = MySession.Static.Factions.TryGetFactionById(factionId);
+                if (faction != null)
                 {
-                    var player = MySession.Static.Players.GetPlayerById(id);
-
-                    if (player.IsBot && Plugin.PluginInstance.m_configuration.IgnoreBotInFactionMessages) return;
-
-                    if (!string.IsNullOrWhiteSpace(player.DisplayName))
+                    MyPlayer.PlayerId id;
+                    if (MySession.Static.Players.TryGetPlayerId(faction.FounderId, out id))
                     {
-                        var msgToUse = Plugin.PluginInstance.m_configuration.FactionCretedMessage.Replace("{f}", $"[{faction.Tag}] {faction.Name}");
-                        Plugin.PluginInstance.DDBridge.SendStatusMessage(player.DisplayName, player.Id.SteamId, msgToUse);
+                        var player = MySession.Static.Players.GetPlayerById(id);
+
+                        if (player.IsBot && Plugin.PluginInstance.m_configuration.IgnoreBotInFactionMessages) return;
+
+                        if (!string.IsNullOrWhiteSpace(player.DisplayName))
+                        {
+                            var msgToUse = Plugin.PluginInstance.m_configuration.FactionCretedMessage.Replace("{f}", $"[{faction.Tag}] {faction.Name}");
+                            Plugin.PluginInstance.DDBridge.SendStatusMessage(player.DisplayName, player.Id.SteamId, msgToUse);
+                        }
                     }
                 }
+            }
+            catch (Exception e)
+            {
+                Logging.Instance.LogError(typeof(GameWatcherController), e);
             }
         }
 
@@ -251,8 +279,6 @@ namespace SEDB_LITE
             try
             {
                 if (!Plugin.PluginInstance.m_configuration.Enabled) return;
-
-                if (!MySession.Static.Ready) return; /* Avoid loading messages */
 
                 if (!Plugin.PluginInstance.m_configuration.DisplayRespawnMessages) return;
 

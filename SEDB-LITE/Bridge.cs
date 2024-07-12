@@ -99,7 +99,7 @@ namespace SEDB_LITE
         }
 
 
-        public async void SendStatusMessage(string user, ulong steamID, string msg)
+        public Task SendStatusMessage(string user, ulong steamID, string msg)
         {
             if (Ready && Plugin.m_configuration.ChannelID.Length > 0)
             {
@@ -109,7 +109,7 @@ namespace SEDB_LITE
                     if (user != null)
                     {
                         if (user.StartsWith("ID:"))
-                            return;
+                            return Task.CompletedTask;
 
                         if (Plugin.m_configuration.DisplaySteamID)
                         {
@@ -125,6 +125,7 @@ namespace SEDB_LITE
                     Logging.Instance.LogError(GetType(), e);
                 }
             }
+            return Task.CompletedTask;
         }
 
         public async Task SendChatMessage(string user, string msg)

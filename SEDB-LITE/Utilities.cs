@@ -65,7 +65,7 @@ namespace SEDB_LITE
                     if (MySession.Static.Players.TryGetPlayerId(identityId, out id))
                     {
                         var player = MySession.Static.Players.GetPlayerById(id);
-                        if (!string.IsNullOrWhiteSpace(player.DisplayName))
+                        if (player != null && !string.IsNullOrWhiteSpace(player.DisplayName))
                         {
                             return player.DisplayName;
                         }
