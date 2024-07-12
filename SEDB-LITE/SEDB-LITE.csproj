@@ -192,6 +192,7 @@
   <ItemGroup>
     <Compile Include="Bridge.cs" />
     <Compile Include="ChatMsg.cs" />
+    <Compile Include="GameWatcherController.cs" />
     <Compile Include="Logging.cs" />
     <Compile Include="MsgWorker.cs" />
     <Compile Include="Patches\PatchController.cs" />
