@@ -10,11 +10,20 @@ namespace SEDB_LITE
 
     static class Utilities
     {
+        private static string TryGetAsServerName(string defaultToUse)
+        {
+            if (Plugin.PluginInstance != null && 
+                Plugin.PluginInstance.m_configuration.NameUnknownUserAsServer &&
+                !string.IsNullOrWhiteSpace(Plugin.PluginInstance.m_configuration.ServerUserName))
+                return Plugin.PluginInstance.m_configuration.ServerUserName;
+            return defaultToUse;
+        }
+
         public static string GetPlayerName(ulong steamId)
         {
             long identityId = MySession.Static != null ? MySession.Static.Players.TryGetIdentityId(steamId) : 0;
             if (identityId == 0)
-                return steamId.ToString();
+                return TryGetAsServerName(steamId.ToString());
             return GetPlayerName(identityId);
         }
 
@@ -32,7 +41,7 @@ namespace SEDB_LITE
                     }
                 }
             }
-            return identityId.ToString();
+            return TryGetAsServerName(identityId.ToString());
         }
     }
 
