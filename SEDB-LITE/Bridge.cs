@@ -58,23 +58,30 @@ namespace SEDB_LITE
 
         private Task Discord_MessageCreated(DiscordClient discord, DSharpPlus.EventArgs.MessageCreateEventArgs e)
         {
-            if (Plugin.DEBUG)
-                Logging.Instance.LogDebug(GetType(), "Discord message received!");
-
-            if (!e.Author.IsBot && Plugin.m_configuration.DiscordToGame)
+            try
             {
-                if (Plugin.m_configuration.ChannelID.Contains(e.Channel.Id.ToString()))
+                if (Plugin.DEBUG)
+                    Logging.Instance.LogDebug(GetType(), "Discord message received!");
+
+                if (!e.Author.IsBot && Plugin.m_configuration.DiscordToGame)
                 {
-                    string sender = e.Guild.GetMemberAsync(e.Author.Id).Result.Username;
-                    var dSender = Plugin.m_configuration.DiscordChatAuthorFormat.Replace("{p}", sender);
+                    if (Plugin.m_configuration.ChannelID.Contains(e.Channel.Id.ToString()))
+                    {
+                        string sender = e.Guild.GetMemberAsync(e.Author.Id).Result.Username;
+                        var dSender = Plugin.m_configuration.DiscordChatAuthorFormat.Replace("{p}", sender);
 
-                    //Fix potential message event duplication?
-                    if (lastMessage.Equals(dSender + e.Message.Content)) return Task.CompletedTask;
+                        //Fix potential message event duplication?
+                        if (lastMessage.Equals(dSender + e.Message.Content)) return Task.CompletedTask;
 
-                    lastMessage = dSender + e.Message.Content;
-                    MyVisualScriptLogicProvider.SendChatMessageColored(e.Message.Content, VRageMath.Color.MediumPurple, dSender, default, Plugin.m_configuration.GlobalColor);
+                        lastMessage = dSender + e.Message.Content;
+                        MyVisualScriptLogicProvider.SendChatMessageColored(e.Message.Content, VRageMath.Color.MediumPurple, dSender, default, Plugin.m_configuration.GlobalColor);
 
+                    }
                 }
+            }
+            catch (Exception ex)
+            {
+                Logging.Instance.LogError(GetType(), ex);
             }
             return Task.CompletedTask;
         }
