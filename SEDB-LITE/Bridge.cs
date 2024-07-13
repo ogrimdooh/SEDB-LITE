@@ -101,7 +101,7 @@ namespace SEDB_LITE
 
         public Task SendStatusMessage(string user, ulong steamID, string msg)
         {
-            if (Ready && Plugin.m_configuration.ChannelID.Length > 0)
+            if (Plugin.m_configuration.ChannelID.Length > 0)
             {
                 try
                 {
@@ -182,9 +182,9 @@ namespace SEDB_LITE
         public void UnloadBot()
         {
             Ready = false;
-            Discord?.DisconnectAsync();
+            Discord?.DisconnectAsync().Wait();
+            Discord.MessageCreated -= Discord_MessageCreated;
         }
-
 
         public void StartTimer()
         {

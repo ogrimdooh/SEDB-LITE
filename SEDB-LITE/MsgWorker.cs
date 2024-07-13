@@ -70,7 +70,7 @@ namespace SEDB_LITE
                 {
                     Logging.Instance.LogError(typeof(MsgWorker), ex);
                 }
-                Thread.Sleep(50);
+                Thread.Sleep(25);
             }
         }
 
@@ -105,6 +105,29 @@ namespace SEDB_LITE
             if (Plugin.DEBUG)
             {
                 Logging.Instance.LogDebug(typeof(MsgWorker), $"Register message : MSG={msg}");
+            }
+        }
+
+        public static void DisconnectAfterSendAllMsgs(Bridge bridge)
+        {
+            if (Plugin.DEBUG)
+            {
+                Logging.Instance.LogInfo(typeof(MsgWorker), $"Bridge marked to disconect!");
+            }
+            int c = 0;
+            while (messagesToSend.Any() && c < 10)
+            {
+                Thread.Sleep(250);
+                c++;
+            }
+            if (bridge != null)
+            {
+                bridge.StopTimer();
+                bridge.UnloadBot();
+                if (Plugin.DEBUG)
+                {
+                    Logging.Instance.LogInfo(typeof(MsgWorker), $"Bridge disconect!");
+                }
             }
         }
 

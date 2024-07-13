@@ -21,16 +21,22 @@ namespace SEDB_LITE
             MyVisualScriptLogicProvider.PlayerDied += MyPlayer_Die;
             Logging.Instance.LogInfo(typeof(GameWatcherController), "Added Watcher to RespawnShipSpawned");
             MyVisualScriptLogicProvider.RespawnShipSpawned += MyEntities_RespawnShipSpawned;
-            if (MySession.Static != null && MySession.Static.Factions != null)
+            if (MySession.Static != null)
             {
-                Logging.Instance.LogInfo(typeof(GameWatcherController), "Added Watcher to FactionCreated");
-                MySession.Static.Factions.FactionCreated += Factions_FactionCreated;
-                Logging.Instance.LogInfo(typeof(GameWatcherController), "Added Watcher to FactionStateChanged");
-                MySession.Static.Factions.FactionStateChanged += Factions_FactionStateChanged;
-                Logging.Instance.LogInfo(typeof(GameWatcherController), "Added Watcher to GpsAdded");
-                MySession.Static.Gpss.GpsAdded += Gpss_GpsAdded;
                 Logging.Instance.LogInfo(typeof(GameWatcherController), "Added Watcher to MySession OnReady");
                 MySession.Static.OnReady += Static_OnReady;
+                if (MySession.Static.Factions != null)
+                {
+                    Logging.Instance.LogInfo(typeof(GameWatcherController), "Added Watcher to FactionCreated");
+                    MySession.Static.Factions.FactionCreated += Factions_FactionCreated;
+                    Logging.Instance.LogInfo(typeof(GameWatcherController), "Added Watcher to FactionStateChanged");
+                    MySession.Static.Factions.FactionStateChanged += Factions_FactionStateChanged;
+                }
+                if (MySession.Static.Gpss != null)
+                {
+                    Logging.Instance.LogInfo(typeof(GameWatcherController), "Added Watcher to GpsAdded");
+                    MySession.Static.Gpss.GpsAdded += Gpss_GpsAdded;
+                }
             }
         }
 
@@ -38,7 +44,14 @@ namespace SEDB_LITE
         {
             try
             {
-                Plugin.PluginInstance.DDBridge.SendStatusMessage(default, default, Plugin.PluginInstance.m_configuration.ServerStartedMessage);
+                if (Plugin.PluginInstance?.DDBridge != null)
+                {
+                    Plugin.PluginInstance.DDBridge.SendStatusMessage(default, default, Plugin.PluginInstance.m_configuration.ServerStartedMessage);
+                }
+                else
+                {
+                    Logging.Instance.LogWarning(typeof(GameWatcherController), "DDBridge not found when Session Ready!");
+                }
             }
             catch (Exception e)
             {
@@ -54,32 +67,48 @@ namespace SEDB_LITE
 
                 if (!Plugin.PluginInstance.m_configuration.DisplayContainerMessages) return;
 
-                var gpsData = MySession.Static.Gpss.GetGps(playerId, gps);
-                var gpsName = gpsData.Name.ToLower();
-                if (gpsData.IsContainerGPS && gpsName.Contains("unknown"))
+                if (MySession.Static?.Gpss != null)
                 {
-
-                    if (Plugin.PluginInstance.m_configuration.DisplayOnlyStrongContainerMessages && !gpsName.Contains("strong")) return;
-
-                    var msgToUse = Plugin.PluginInstance.m_configuration.ContainerMessage;
-                    var finalName = string.Join(" ",
-                        gpsData.Name
-                        .Split(new[] { ' ' }, StringSplitOptions.RemoveEmptyEntries)
-                        .Reverse()
-                        .Skip(1)
-                        .Reverse()
-                        .ToArray()
-                    );
-
-                    msgToUse = msgToUse.Replace("{t}", finalName);
-                    msgToUse = msgToUse.Replace("{c}", $"{gpsData.Coords.X}:{gpsData.Coords.Y}:{gpsData.Coords.Z}");
-                    MyPlayer.PlayerId id;
-                    if (MySession.Static.Players.TryGetPlayerId(playerId, out id))
+                    var gpsData = MySession.Static.Gpss.GetGps(playerId, gps);
+                    if (gpsData != null)
                     {
-                        var player = MySession.Static.Players.GetPlayerById(id);
-                        if (!string.IsNullOrWhiteSpace(player.DisplayName))
+                        var gpsName = gpsData?.Name ?? "";
+                        if (gpsData?.IsContainerGPS ?? false && gpsName.ToLower().Contains("unknown"))
                         {
-                            Plugin.PluginInstance.DDBridge.SendStatusMessage(player.DisplayName, player.Id.SteamId, msgToUse);
+
+                            if (Plugin.PluginInstance.m_configuration.DisplayOnlyStrongContainerMessages && !gpsName.Contains("strong")) return;
+
+                            var msgToUse = Plugin.PluginInstance.m_configuration.ContainerMessage;
+                            var finalName = string.Join(" ",
+                                gpsName
+                                .Split(new[] { ' ' }, StringSplitOptions.RemoveEmptyEntries)
+                                .Reverse()
+                                .Skip(1)
+                                .Reverse()
+                                .ToArray()
+                            );
+
+                            msgToUse = msgToUse.Replace("{t}", finalName);
+                            if (gpsData != null && gpsData.Entity != null)
+                            {
+                                msgToUse = msgToUse.Replace("{c}", $"{gpsData.Coords.X}:{gpsData.Coords.Y}:{gpsData.Coords.Z}");
+                            }
+                            else
+                            {
+                                msgToUse = msgToUse.Replace("{c}", "Lost Position");
+                            }
+                            if (MySession.Static?.Players != null)
+                            {
+                                MyPlayer.PlayerId id;
+                                if (MySession.Static.Players.TryGetPlayerId(playerId, out id))
+                                {
+                                    var player = MySession.Static.Players.GetPlayerById(id);
+                                    if (player != null && !string.IsNullOrWhiteSpace(player.DisplayName))
+                                    {
+                                        Plugin.PluginInstance.DDBridge.SendStatusMessage(player.DisplayName, player.Id.SteamId, msgToUse);
+                                    }
+                                }
+                            }
                         }
                     }
                 }

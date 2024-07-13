@@ -14,6 +14,7 @@ using System.Reflection;
 using Sandbox.Engine.Utils;
 using System.Windows.Input;
 using System.Linq;
+using System.Threading;
 
 namespace SEDB_LITE
 {
@@ -116,7 +117,8 @@ namespace SEDB_LITE
         public void Dispose()
         {
             Logging.Instance.LogInfo(GetType(), "Unloading SEDB Lite!");
-            DDBridge.SendStatusMessage(default, default, m_configuration.ServerStoppedMessage);
+            DDBridge.SendStatusMessage(default, default, m_configuration.ServerStoppedMessage).Wait();
+            MsgWorker.DisconnectAfterSendAllMsgs(DDBridge);
             try
             {
                 GameWatcherController.Dispose();
@@ -129,7 +131,7 @@ namespace SEDB_LITE
 
         public string GetPluginTitle()
         {
-            return "SEDiscordBridge - Lite! v1.0.3.5";
+            return "SEDiscordBridge - Lite! v1.0.3.6";
         }
 
         public Task ProcessStatusMessage(string user, ulong player, string message)
