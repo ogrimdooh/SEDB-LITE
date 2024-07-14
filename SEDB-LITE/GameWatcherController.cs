@@ -25,6 +25,8 @@ namespace SEDB_LITE
             {
                 Logging.Instance.LogInfo(typeof(GameWatcherController), "Added Watcher to MySession OnReady");
                 MySession.Static.OnReady += Static_OnReady;
+                Logging.Instance.LogInfo(typeof(GameWatcherController), "Added Watcher to MySession OnUnloading");
+                MySession.OnUnloading += MySession_OnUnloading;
                 if (MySession.Static.Factions != null)
                 {
                     Logging.Instance.LogInfo(typeof(GameWatcherController), "Added Watcher to FactionCreated");
@@ -38,6 +40,11 @@ namespace SEDB_LITE
                     MySession.Static.Gpss.GpsAdded += Gpss_GpsAdded;
                 }
             }
+        }
+
+        private static void MySession_OnUnloading()
+        {
+            Plugin.DoDispose();
         }
 
         private static void Static_OnReady()
@@ -123,10 +130,19 @@ namespace SEDB_LITE
         {
             MyVisualScriptLogicProvider.PlayerDied -= MyPlayer_Die;
             MyVisualScriptLogicProvider.RespawnShipSpawned -= MyEntities_RespawnShipSpawned;
-            if (MySession.Static != null && MySession.Static.Factions != null)
+            if (MySession.Static != null)
             {
-                MySession.Static.Factions.FactionCreated -= Factions_FactionCreated;
-                MySession.Static.Factions.FactionStateChanged -= Factions_FactionStateChanged;
+                MySession.Static.OnReady -= Static_OnReady;
+                MySession.OnUnloading -= MySession_OnUnloading;
+                if (MySession.Static.Factions != null)
+                {
+                    MySession.Static.Factions.FactionCreated -= Factions_FactionCreated;
+                    MySession.Static.Factions.FactionStateChanged -= Factions_FactionStateChanged;
+                }
+                if (MySession.Static.Gpss != null)
+                {
+                    MySession.Static.Gpss.GpsAdded -= Gpss_GpsAdded;
+                }
             }
         }
 
@@ -212,6 +228,8 @@ namespace SEDB_LITE
 
                 if (!Plugin.PluginInstance.m_configuration.DisplayFactionMessages) return;
 
+                if (MySession.Static?.Factions == null) return;
+
                 int msgType = 0;
                 if (IsFactionChangeValidToMsg(action, out msgType))
                 {
@@ -255,6 +273,8 @@ namespace SEDB_LITE
                     if (MySession.Static.Players.TryGetPlayerId(playerId, out id))
                     {
                         var player = MySession.Static.Players.GetPlayerById(id);
+
+                        if (player == null) return;
 
                         if (player.IsBot && Plugin.PluginInstance.m_configuration.IgnoreBotInFactionMessages) return;
 

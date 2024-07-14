@@ -114,24 +114,44 @@ namespace SEDB_LITE
             return m_configuration;
         }
 
+        private static bool _disposed = false;
+        public static void DoDispose()
+        {
+            if (_disposed)
+            {
+                if (DEBUG)
+                {
+                    Logging.Instance.LogInfo(typeof(Plugin), "SEDB already disposed!");
+                }
+            }
+            else
+            {
+                _disposed = true;
+                try
+                {
+                    Logging.Instance.LogInfo(typeof(Plugin), "Unloading SEDB Lite!");
+                    if (PluginInstance != null)
+                    {
+                        PluginInstance.DDBridge.SendStatusMessage(default, default, PluginInstance.m_configuration.ServerStoppedMessage).Wait();
+                        MsgWorker.DisconnectAfterSendAllMsgs(PluginInstance.DDBridge);
+                    }
+                    GameWatcherController.Dispose();
+                }
+                catch (Exception e)
+                {
+                    Logging.Instance.LogError(typeof(Plugin), e);
+                }
+            }
+        }
+
         public void Dispose()
         {
-            Logging.Instance.LogInfo(GetType(), "Unloading SEDB Lite!");
-            DDBridge.SendStatusMessage(default, default, m_configuration.ServerStoppedMessage).Wait();
-            MsgWorker.DisconnectAfterSendAllMsgs(DDBridge);
-            try
-            {
-                GameWatcherController.Dispose();
-            }
-            catch (Exception e)
-            {
-                Logging.Instance.LogError(GetType(), e);
-            }
+            DoDispose();
         }
 
         public string GetPluginTitle()
         {
-            return "SEDiscordBridge - Lite! v1.0.3.6";
+            return "SEDiscordBridge - Lite! v1.0.3.7";
         }
 
         public Task ProcessStatusMessage(string user, ulong player, string message)

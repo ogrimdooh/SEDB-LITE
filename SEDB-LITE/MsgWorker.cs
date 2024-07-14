@@ -26,6 +26,7 @@ namespace SEDB_LITE
         private static ConcurrentQueue<DiscordMessage> messagesToSend = new ConcurrentQueue<DiscordMessage>();
         private static List<DiscordMessage> lastMessages = new List<DiscordMessage>();
         private static Thread mainThread = null;
+        private static bool canRun = true;
 
         private static void DoWork()
         {
@@ -33,7 +34,7 @@ namespace SEDB_LITE
             {
                 Logging.Instance.LogDebug(typeof(MsgWorker), $"Thread work start!");
             }
-            while (true)
+            while (canRun)
             {
                 try
                 {
@@ -71,6 +72,10 @@ namespace SEDB_LITE
                     Logging.Instance.LogError(typeof(MsgWorker), ex);
                 }
                 Thread.Sleep(25);
+            }
+            if (Plugin.DEBUG)
+            {
+                Logging.Instance.LogDebug(typeof(MsgWorker), $"Thread work stop!");
             }
         }
 
@@ -120,6 +125,7 @@ namespace SEDB_LITE
                 Thread.Sleep(250);
                 c++;
             }
+            canRun = false;
             if (bridge != null)
             {
                 bridge.StopTimer();
