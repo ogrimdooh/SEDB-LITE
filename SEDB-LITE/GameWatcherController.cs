@@ -9,6 +9,7 @@ using VRage.Game.Definitions.SessionComponents;
 using VRage.Game.ObjectBuilders.Definitions.SessionComponents;
 using VRage.Game.ObjectBuilders.Components;
 using Sandbox.Game.SessionComponents;
+using System.Diagnostics;
 
 namespace SEDB_LITE
 {
@@ -254,11 +255,17 @@ namespace SEDB_LITE
                     var fromFaction = MySession.Static.Factions.TryGetFactionById(fromFactionId);
                     if (fromFaction != null)
                     {
+
+                        if (Plugin.PluginInstance.m_configuration.IgnoredFactionTags.Split(';').Contains(fromFaction.Tag)) return;
+
                         msgToUse = msgToUse.Replace("{f}", $"[{fromFaction.Tag}] {fromFaction.Name}");
                     }
                     var toFaction = MySession.Static.Factions.TryGetFactionById(toFactionId);
                     if (toFaction != null)
                     {
+
+                        if (Plugin.PluginInstance.m_configuration.IgnoredFactionTags.Split(';').Contains(toFaction.Tag)) return;
+
                         msgToUse = msgToUse.Replace("{f2}", $"[{toFaction.Tag}] {toFaction.Name}");
                     }
                     if (senderId != 0)
@@ -302,6 +309,9 @@ namespace SEDB_LITE
                 var faction = MySession.Static.Factions.TryGetFactionById(factionId);
                 if (faction != null)
                 {
+
+                    if (Plugin.PluginInstance.m_configuration.IgnoredFactionTags.Split(';').Contains(faction.Tag)) return;
+
                     MyPlayer.PlayerId id;
                     if (MySession.Static.Players.TryGetPlayerId(faction.FounderId, out id))
                     {

@@ -196,6 +196,9 @@
     <Compile Include="GameWatcherController.cs" />
     <Compile Include="Logging.cs" />
     <Compile Include="MsgWorker.cs" />
+    <Compile Include="Patches\CompetetiveContainerOpenedPatch.cs" />
+    <Compile Include="Patches\ContainerOpenedPatch.cs" />
+    <Compile Include="Patches\GridJumpedPatch.cs" />
     <Compile Include="Patches\PatchController.cs" />
     <Compile Include="Patches\ChatPatch.cs" />
     <Compile Include="Patches\PlayerJoinedPatch.cs" />

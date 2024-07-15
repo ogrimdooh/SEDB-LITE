@@ -11,7 +11,8 @@ using SEDB_LITE;
 using Sandbox.Game.Gui;
 using VRage.Utils;
 using static SEDB_LITE.PatchController;
-using Sandbox.Game.World;
+using VRage.Game.Entity;
+using VRage.Game.ModAPI;
 
 namespace SEDB_LITE.Patches
 {

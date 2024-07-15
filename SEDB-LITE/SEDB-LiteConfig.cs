@@ -107,6 +107,24 @@ namespace SEDB_LITE
         [Category("Unknow Signals")]
         public string ContainerMessage = ":package: {t} has spawn at {c}.";
 
+        [Display(Name = "Message when player got the signal", Order = 4)]
+        [Category("Unknow Signals")]
+        public string GetedContainerMessage = ":package: {p} just got the {t}.";
+
+        /* Unknow Signals */
+
+        [Display(Name = "Enable to display grid jump messages", Order = 1)]
+        [Category("Grids")]
+        public bool DisplayGridsJumpMessages = true;
+
+        [Display(Name = "Message when grid jump", Order = 2)]
+        [Category("Grids")]
+        public string GridJumpMessage = ":rocket: {p} just start a jump with {g} for {d}km through space.";
+
+        [Display(Name = "Unknow Jump Grid Name", Order = 3)]
+        [Category("Grids")]
+        public string UnknowJumpGridName = "unknow grid";
+
         /* Player */
 
         [Display(Name = "Enable to display respawn messages", Order = 1)]
@@ -134,6 +152,10 @@ namespace SEDB_LITE
         [Display(Name = "Ignore Bot In Faction Messages", Order = 2)]
         [Category("Faction")]
         public bool IgnoreBotInFactionMessages = true;
+
+        [Display(Name = "Ignored factions (Ex.: TAG;TAG;TAG)", Order = 2)]
+        [Category("Faction")]
+        public string IgnoredFactionTags = "";
 
         [Display(Name = "Msg when a faction is creted", Order = 3)]
         [Category("Faction")]

@@ -71,7 +71,7 @@ namespace SEDB_LITE
                 {
                     Logging.Instance.LogError(typeof(MsgWorker), ex);
                 }
-                Thread.Sleep(25);
+                Thread.Sleep(250);
             }
             if (Plugin.DEBUG)
             {
