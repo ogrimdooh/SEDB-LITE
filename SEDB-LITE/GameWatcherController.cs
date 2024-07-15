@@ -10,6 +10,8 @@ using VRage.Game.ObjectBuilders.Definitions.SessionComponents;
 using VRage.Game.ObjectBuilders.Components;
 using Sandbox.Game.SessionComponents;
 using System.Diagnostics;
+using Sandbox.ModAPI;
+using SEDB_LITE.Patches;
 
 namespace SEDB_LITE
 {
@@ -80,13 +82,17 @@ namespace SEDB_LITE
                     var gpsData = MySession.Static.Gpss.GetGps(playerId, gps);
                     if (gpsData != null)
                     {
-                        var gpsName = gpsData?.Name ?? "";
-                        if (gpsData?.IsContainerGPS ?? false && gpsName.ToLower().Contains("unknown"))
+                        var gpsName = gpsData.Name ?? "";
+                        if (gpsData.IsContainerGPS && gpsName.ToLower().Contains("signal"))
                         {
 
-                            if (Plugin.PluginInstance.m_configuration.DisplayOnlyStrongContainerMessages && !gpsName.Contains("strong")) return;
+                            bool isStrong = gpsName.Contains("strong");
 
-                            var msgToUse = Plugin.PluginInstance.m_configuration.ContainerMessage;
+                            if (Plugin.PluginInstance.m_configuration.DisplayOnlyStrongContainerMessages && !isStrong) return;
+
+                            var msgToUse = isStrong ?
+                                Plugin.PluginInstance.m_configuration.StrongContainerMessage : 
+                                Plugin.PluginInstance.m_configuration.ContainerMessage;
                             var finalName = string.Join(" ",
                                 gpsName
                                 .Split(new[] { ' ' }, StringSplitOptions.RemoveEmptyEntries)
@@ -97,13 +103,20 @@ namespace SEDB_LITE
                             );
 
                             msgToUse = msgToUse.Replace("{t}", finalName);
-                            if (gpsData != null && gpsData.Entity != null)
+                            if (isStrong)
                             {
-                                msgToUse = msgToUse.Replace("{c}", $"{gpsData.Coords.X}:{gpsData.Coords.Y}:{gpsData.Coords.Z}");
+                                if (gpsData != null && gpsData.Entity != null)
+                                {
+                                    msgToUse = msgToUse.Replace("{c}", $"{gpsData.Coords.X}:{gpsData.Coords.Y}:{gpsData.Coords.Z}");
+                                }
+                                else
+                                {
+                                    msgToUse = msgToUse.Replace("{c}", "Lost Position");
+                                }
                             }
                             else
                             {
-                                msgToUse = msgToUse.Replace("{c}", "Lost Position");
+                                msgToUse = msgToUse.Replace("{c}", "Unknow Position");
                             }
                             if (MySession.Static?.Players != null)
                             {
@@ -255,6 +268,7 @@ namespace SEDB_LITE
                     var fromFaction = MySession.Static.Factions.TryGetFactionById(fromFactionId);
                     if (fromFaction != null)
                     {
+                        if (Plugin.PluginInstance.m_configuration.IgnoreNpcFactionsInMessages && MySession.Static.Factions.IsNpcFaction(fromFaction.Tag)) return;
 
                         if (Plugin.PluginInstance.m_configuration.IgnoredFactionTags.Split(';').Contains(fromFaction.Tag)) return;
 
@@ -263,6 +277,7 @@ namespace SEDB_LITE
                     var toFaction = MySession.Static.Factions.TryGetFactionById(toFactionId);
                     if (toFaction != null)
                     {
+                        if (Plugin.PluginInstance.m_configuration.IgnoreNpcFactionsInMessages && MySession.Static.Factions.IsNpcFaction(toFaction.Tag)) return;
 
                         if (Plugin.PluginInstance.m_configuration.IgnoredFactionTags.Split(';').Contains(toFaction.Tag)) return;
 
@@ -309,6 +324,7 @@ namespace SEDB_LITE
                 var faction = MySession.Static.Factions.TryGetFactionById(factionId);
                 if (faction != null)
                 {
+                    if (Plugin.PluginInstance.m_configuration.IgnoreNpcFactionsInMessages && MySession.Static.Factions.IsNpcFaction(faction.Tag)) return;
 
                     if (Plugin.PluginInstance.m_configuration.IgnoredFactionTags.Split(';').Contains(faction.Tag)) return;
 
@@ -357,6 +373,40 @@ namespace SEDB_LITE
             }
         }
 
+        private static string GetDamageTypeDescription(MyDamageInformationExtensions.DamageType damageType)
+        {
+            switch (damageType)
+            {
+                case MyDamageInformationExtensions.DamageType.Creature:
+                    return Plugin.PluginInstance.m_configuration.DieCauseCreature;
+                case MyDamageInformationExtensions.DamageType.Bullet:
+                    return Plugin.PluginInstance.m_configuration.DieCauseBullet;
+                case MyDamageInformationExtensions.DamageType.Explosion:
+                    return Plugin.PluginInstance.m_configuration.DieCauseExplosion;
+                case MyDamageInformationExtensions.DamageType.Radioactivity:
+                    return Plugin.PluginInstance.m_configuration.DieCauseRadioactivity;
+                case MyDamageInformationExtensions.DamageType.Fire:
+                    return Plugin.PluginInstance.m_configuration.DieCauseFire;
+                case MyDamageInformationExtensions.DamageType.Toxicity:
+                    return Plugin.PluginInstance.m_configuration.DieCauseToxicity;
+                case MyDamageInformationExtensions.DamageType.Fall:
+                    return Plugin.PluginInstance.m_configuration.DieCauseFall;
+                case MyDamageInformationExtensions.DamageType.Tool:
+                    return Plugin.PluginInstance.m_configuration.DieCauseTool;
+                case MyDamageInformationExtensions.DamageType.Environment:
+                    return Plugin.PluginInstance.m_configuration.DieCauseEnvironment;
+                case MyDamageInformationExtensions.DamageType.Suicide:
+                    return Plugin.PluginInstance.m_configuration.DieCauseSuicide;
+                case MyDamageInformationExtensions.DamageType.Asphyxia:
+                    return Plugin.PluginInstance.m_configuration.DieCauseAsphyxia;
+                case MyDamageInformationExtensions.DamageType.Other:
+                    return Plugin.PluginInstance.m_configuration.DieCauseOther;
+                case MyDamageInformationExtensions.DamageType.None:
+                default:
+                    return Plugin.PluginInstance.m_configuration.DieCauseNone;
+            }
+        }
+
         private static void MyPlayer_Die(long playerId)
         {
             try
@@ -369,9 +419,36 @@ namespace SEDB_LITE
                 if (MySession.Static.Players.TryGetPlayerId(playerId, out id))
                 {
                     var player = MySession.Static.Players.GetPlayerById(id);
-                    if (!string.IsNullOrWhiteSpace(player.DisplayName))
+                    if (player != null && !string.IsNullOrWhiteSpace(player.DisplayName))
                     {
-                        Plugin.PluginInstance.DDBridge.SendStatusMessage(player.DisplayName, player.Id.SteamId, Plugin.PluginInstance.m_configuration.DieMessage);
+                        long attackerPlayerId = 0;
+                        MyDamageInformationExtensions.DamageType damageType;
+                        MyDamageInformationExtensions.AttackerType attackerType = MyDamageInformationExtensions.AttackerType.None;
+                        VRage.ModAPI.IMyEntity attackerEntity = null;
+                        var damage = player.Character.StatComp.LastDamage;
+                        if (damage.AttackerId != 0)
+                            attackerEntity = damage.GetAttacker(out attackerPlayerId, out damageType, out attackerType);
+                        else
+                            damageType = MyDamageInformationExtensions.GetDamageType(damage.Type);
+                        var isAttackerPlayer = MyAPIGateway.Players.TryGetSteamId(attackerPlayerId) != 0;
+                        var msgToUse = Plugin.PluginInstance.m_configuration.DieMessage;
+                        if (attackerPlayerId != 0 && isAttackerPlayer &&
+                            player.Character.StatComp.LastDamage.AttackerId != playerId)
+                        {
+                            MyPlayer.PlayerId id2;
+                            if (MySession.Static.Players.TryGetPlayerId(attackerPlayerId, out id2))
+                            {
+                                var player2 = MySession.Static.Players.GetPlayerById(id2);
+                                if (player2 != null && !string.IsNullOrWhiteSpace(player2.DisplayName))
+                                {
+                                    msgToUse = Plugin.PluginInstance.m_configuration.MurderMessage;
+                                    msgToUse = msgToUse.Replace("{p2}", player2.DisplayName);
+                                }
+                            }
+                        }
+                        msgToUse = msgToUse.Replace("{c}", GetDamageTypeDescription(damageType));
+                        msgToUse = msgToUse.Replace("{d}", damage.Amount.ToString("#0.0"));
+                        Plugin.PluginInstance.DDBridge.SendStatusMessage(player.DisplayName, player.Id.SteamId, msgToUse);
                     }
                 }
             }

@@ -105,9 +105,13 @@ namespace SEDB_LITE
 
         [Display(Name = "Message unknow signals spawn", Order = 3)]
         [Category("Unknow Signals")]
-        public string ContainerMessage = ":package: {t} has spawn at {c}.";
+        public string ContainerMessage = ":package: {t} has spawn to {p} at {c}.";
 
-        [Display(Name = "Message when player got the signal", Order = 4)]
+        [Display(Name = "Message strong unknow signals spawn", Order = 4)]
+        [Category("Unknow Signals")]
+        public string StrongContainerMessage = ":package: {t} has spawn at {c}.";
+
+        [Display(Name = "Message when player got the signal", Order = 5)]
         [Category("Unknow Signals")]
         public string GetedContainerMessage = ":package: {p} just got the {t}.";
 
@@ -141,7 +145,63 @@ namespace SEDB_LITE
 
         [Display(Name = "Msg when the player dies", Order = 4)]
         [Category("Player")]
-        public string DieMessage = ":skull: The player {p} has died.";
+        public string DieMessage = ":skull: The player {p} has died by {c} after taking {d} of damage.";
+
+        [Display(Name = "Msg when the player is murdered", Order = 5)]
+        [Category("Player")]
+        public string MurderMessage = ":skull: The player {p} was murdered by {p2} that cause {d} of damage by {c}.";
+
+        [Display(Name = "Death cause: Unknow", Order = 6)]
+        [Category("Player")]
+        public string DieCauseNone = "a unknow source";
+
+        [Display(Name = "Death cause: Creature", Order = 6)]
+        [Category("Player")]
+        public string DieCauseCreature = "a wicked creature";
+
+        [Display(Name = "Death cause: Bullet", Order = 6)]
+        [Category("Player")]
+        public string DieCauseBullet = "a accurate shot";
+
+        [Display(Name = "Death cause: Explosion", Order = 6)]
+        [Category("Player")]
+        public string DieCauseExplosion = "a unexpected explosion";
+
+        [Display(Name = "Death cause: Radioactivity", Order = 6)]
+        [Category("Player")]
+        public string DieCauseRadioactivity = "a radiation poisoning";
+
+        [Display(Name = "Death cause: Fire", Order = 6)]
+        [Category("Player")]
+        public string DieCauseFire = "a merciless flames";
+
+        [Display(Name = "Death cause: Toxicity", Order = 6)]
+        [Category("Player")]
+        public string DieCauseToxicity = "a intoxication";
+
+        [Display(Name = "Death cause: Fall", Order = 6)]
+        [Category("Player")]
+        public string DieCauseFall = "a painful fall";
+
+        [Display(Name = "Death cause: Tool", Order = 6)]
+        [Category("Player")]
+        public string DieCauseTool = "a unpredictable tool";
+
+        [Display(Name = "Death cause: Environment", Order = 6)]
+        [Category("Player")]
+        public string DieCauseEnvironment = "a environment source";
+
+        [Display(Name = "Death cause: Suicide", Order = 6)]
+        [Category("Player")]
+        public string DieCauseSuicide = "a sad suicide";
+
+        [Display(Name = "Death cause: Asphyxia", Order = 6)]
+        [Category("Player")]
+        public string DieCauseAsphyxia = "a agonizing suffocation";
+
+        [Display(Name = "Death cause: Other", Order = 6)]
+        [Category("Player")]
+        public string DieCauseOther = "a unexpected source";
 
         /* Faction */
 
@@ -152,6 +212,10 @@ namespace SEDB_LITE
         [Display(Name = "Ignore Bot In Faction Messages", Order = 2)]
         [Category("Faction")]
         public bool IgnoreBotInFactionMessages = true;
+
+        [Display(Name = "Ignore Npc Factions In Messages", Order = 2)]
+        [Category("Faction")]
+        public bool IgnoreNpcFactionsInMessages = true;
 
         [Display(Name = "Ignored factions (Ex.: TAG;TAG;TAG)", Order = 2)]
         [Category("Faction")]
