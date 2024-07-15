@@ -12,6 +12,7 @@ using Sandbox.Game.SessionComponents;
 using System.Diagnostics;
 using Sandbox.ModAPI;
 using SEDB_LITE.Patches;
+using static SEDB_LITE.Patches.MyDamageInformationExtensions;
 
 namespace SEDB_LITE
 {
@@ -445,6 +446,12 @@ namespace SEDB_LITE
                                 }
                             }
                         }
+
+                        if (Plugin.DEBUG)
+                        {
+                            Logging.Instance.LogInfo(typeof(Plugin), $"MyPlayer_Die: playerId={playerId} | damage={damage.Type} | damageType={damageType}");
+                        }
+
                         msgToUse = msgToUse.Replace("{c}", GetDamageTypeDescription(damageType));
                         msgToUse = msgToUse.Replace("{d}", damage.Amount.ToString("#0.0"));
                         Plugin.PluginInstance.DDBridge.SendStatusMessage(player.DisplayName, player.Id.SteamId, msgToUse);

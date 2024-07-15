@@ -115,18 +115,26 @@ namespace SEDB_LITE
         [Category("Unknow Signals")]
         public string GetedContainerMessage = ":package: {p} just got the {t}.";
 
-        /* Unknow Signals */
+        /* Grid Jump */
 
         [Display(Name = "Enable to display grid jump messages", Order = 1)]
-        [Category("Grids")]
+        [Category("Grid Jump")]
         public bool DisplayGridsJumpMessages = true;
 
-        [Display(Name = "Message when grid jump", Order = 2)]
-        [Category("Grids")]
+        [Display(Name = "Display only first jump message", Order = 2)]
+        [Category("Grid Jump")]
+        public bool DisplayOnlyFirstJumpMessage = false;
+
+        [Display(Name = "Message when grid jump", Order = 3)]
+        [Category("Grid Jump")]
         public string GridJumpMessage = ":rocket: {p} just start a jump with {g} for {d}km through space.";
 
-        [Display(Name = "Unknow Jump Grid Name", Order = 3)]
-        [Category("Grids")]
+        [Display(Name = "Message when player first jump", Order = 4)]
+        [Category("Grid Jump")]
+        public string FirstGridJumpMessage = ":rocket: {p} just start his *first* jump with {g} for {d}km through space. Congratulations!";
+
+        [Display(Name = "Unknow Jump Grid Name", Order = 5)]
+        [Category("Grid Jump")]
         public string UnknowJumpGridName = "unknow grid";
 
         /* Player */

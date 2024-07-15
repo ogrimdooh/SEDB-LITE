@@ -209,6 +209,10 @@
     <Compile Include="Plugin.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="SEDB-LiteConfig.cs" />
+    <Compile Include="Storage\Base\BaseStorage.cs" />
+    <Compile Include="Storage\PlayerStorage.cs" />
+    <Compile Include="Storage\PlayerStorageValue.cs" />
+    <Compile Include="Storage\SEDBStorage.cs" />
     <Compile Include="Utilities.cs" />
   </ItemGroup>
   <ItemGroup>

@@ -55,10 +55,20 @@ namespace SEDB_LITE.Patches
                                 distance *= -1;
                             }
 
-                            var msgToUse = Plugin.m_configuration.GridJumpMessage;
+                            var didJump = SEDBStorage.Instance.GetEntityValue<bool>(player.Id.SteamId, SEDBStorage.KEY_DID_JUMP);
+
+                            if (Plugin.m_configuration.DisplayOnlyFirstJumpMessage && didJump) return;
+
+                            var msgToUse = didJump ? Plugin.m_configuration.GridJumpMessage : Plugin.m_configuration.FirstGridJumpMessage;
                             msgToUse = msgToUse.Replace("{g}", gridName);
                             msgToUse = msgToUse.Replace("{d}", distance.ToString("#0.0"));
                             Plugin.PluginInstance.DDBridge.SendStatusMessage(player.DisplayName, player.Id.SteamId, msgToUse);
+
+                            SEDBStorage.Instance.SetEntityValue<bool>(player.Id.SteamId, SEDBStorage.KEY_DID_JUMP, true);
+                            var jumpCount = SEDBStorage.Instance.GetEntityValue<int>(player.Id.SteamId, SEDBStorage.KEY_JUMP_COUNT);
+                            SEDBStorage.Instance.SetEntityValue<int>(player.Id.SteamId, SEDBStorage.KEY_JUMP_COUNT, jumpCount + 1);
+
+                            SEDBStorage.Save();
                         }
                     }
                 }
