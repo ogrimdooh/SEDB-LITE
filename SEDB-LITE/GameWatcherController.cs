@@ -432,8 +432,7 @@ namespace SEDB_LITE
                             damageType = MyDamageInformationExtensions.GetDamageType(damage.Type);
                         var isAttackerPlayer = MyAPIGateway.Players.TryGetSteamId(attackerPlayerId) != 0;
                         var msgToUse = Plugin.PluginInstance.m_configuration.DieMessage;
-                        if (attackerPlayerId != 0 && isAttackerPlayer &&
-                            player.Character.StatComp.LastDamage.AttackerId != playerId)
+                        if (attackerPlayerId != 0 && isAttackerPlayer && attackerPlayerId != playerId)
                         {
                             MyPlayer.PlayerId id2;
                             if (MySession.Static.Players.TryGetPlayerId(attackerPlayerId, out id2))
