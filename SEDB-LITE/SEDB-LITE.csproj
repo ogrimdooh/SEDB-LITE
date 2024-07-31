@@ -194,6 +194,7 @@
     <Compile Include="ChatCommand.cs" />
     <Compile Include="ChatMsg.cs" />
     <Compile Include="Extensions\IMyCharacterExtensions.cs" />
+    <Compile Include="Extensions\IMyPlayerExtensions.cs" />
     <Compile Include="Extensions\MyDamageInformationExtensions.cs" />
     <Compile Include="GameWatcherController.cs" />
     <Compile Include="Logging.cs" />

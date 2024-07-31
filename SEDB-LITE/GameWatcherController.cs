@@ -13,6 +13,14 @@ using System.Diagnostics;
 using Sandbox.ModAPI;
 using SEDB_LITE.Patches;
 using static SEDB_LITE.Patches.MyDamageInformationExtensions;
+using VRage.Game.Entity;
+using System.Collections.Generic;
+using Sandbox.Common.ObjectBuilders;
+using Sandbox.Game.GameSystems;
+using System.Collections.Concurrent;
+using static VRage.Dedicated.Configurator.SelectInstanceForm;
+using VRageMath;
+using Sandbox.Game.Entities.Character;
 
 namespace SEDB_LITE
 {
@@ -43,6 +51,306 @@ namespace SEDB_LITE
                     Logging.Instance.LogInfo(typeof(GameWatcherController), "Added Watcher to GpsAdded");
                     MySession.Static.Gpss.GpsAdded += Gpss_GpsAdded;
                 }
+                if (MySession.Static.Players != null)
+                {
+                    Logging.Instance.LogInfo(typeof(GameWatcherController), "Added Watcher to Player Connected/Disconnected");
+                    MySession.Static.Players.PlayersChanged += Players_PlayersChanged;
+                }
+            }
+            Logging.Instance.LogInfo(typeof(GameWatcherController), "Do Initial Load Entities");
+            DoInitialLoadEntities();
+            Logging.Instance.LogInfo(typeof(GameWatcherController), "Added Watcher to MyEntities OnEntityAdd");
+            MyEntities.OnEntityAdd += Entities_OnEntityAdd;
+            Logging.Instance.LogInfo(typeof(GameWatcherController), "Added Watcher to MyEntities OnEntityRemove");
+            MyEntities.OnEntityRemove += Entities_OnEntityRemove;
+        }
+
+        private static void Players_PlayersChanged(bool connected, MyPlayer.PlayerId id)
+        {
+            if (connected)
+                Players_PlayerConnected(id);
+            else
+                Players_PlayerDisconnected(id);
+        }
+
+        private static bool _inicialLoadComplete = false;
+        private static void DoInitialLoadEntities()
+        {
+            if (!_inicialLoadComplete)
+            {
+                foreach (var entity in MyEntities.GetEntities())
+                {
+                    Entities_OnEntityAdd(entity);
+                }
+                _inicialLoadComplete = true;
+            }
+        }
+
+        public static ConcurrentDictionary<long, MyPlanet> Planets { get; private set; } = new ConcurrentDictionary<long, MyPlanet>();
+        public static ConcurrentDictionary<MyPlayer.PlayerId, MyPlayer> Players { get; private set; } = new ConcurrentDictionary<MyPlayer.PlayerId, MyPlayer>();
+
+        public static MyPlanet GetPlanetAtRange(Vector3D position)
+        {
+            return Planets.Values.OrderBy(x => Vector3D.Distance(position, x.PositionComp.GetPosition())).FirstOrDefault();
+        }
+
+        private static void Players_PlayerConnected(MyPlayer.PlayerId id)
+        {
+            if (!Players.ContainsKey(id))
+            {
+                var p = MySession.Static.Players.GetPlayerById(id);
+                if (p != null && p.IsValidPlayer())
+                {
+                    Players[id] = p;
+                }
+            }
+        }
+
+        private static void Players_PlayerDisconnected(MyPlayer.PlayerId id)
+        {
+            if (Players.ContainsKey(id))
+                Players.Remove(id);
+        }
+
+        private static void UpdatePlayerList()
+        {
+            Players.Clear();
+            var tempPlayers = new List<IMyPlayer>();
+            MyAPIGateway.Players.GetPlayers(tempPlayers);
+
+            foreach (var p in tempPlayers)
+            {
+                if (p.IsValidPlayer())
+                {
+                    Players[(p as MyPlayer).Id] = p as MyPlayer;
+                }
+            }
+        }
+
+        private static void Entities_OnEntityAdd(MyEntity entity)
+        {
+            try
+            {
+                var planet = entity as MyPlanet;
+                if (planet != null)
+                {
+                    lock (Planets)
+                    {
+                        Planets[planet.EntityId] = planet;
+                    }
+                    return;
+                }
+            }
+            catch (Exception e)
+            {
+                Logging.Instance.LogError(typeof(GameWatcherController), e);
+            }
+        }
+
+        private static void CheckOnPlayerGravityMessages(MyPlayer.PlayerId playerId, MyCharacter character)
+        {
+
+            if (!Plugin.PluginInstance.m_configuration.DisplayGridsGravityMessages) return;
+
+            if (!Players.ContainsKey(playerId))
+                UpdatePlayerList();
+
+            if (!Players.ContainsKey(playerId)) return;
+
+            var player = Players[playerId];
+
+            var didRegisterLocation = SEDBStorage.Instance.GetEntityValue<bool>(playerId.SteamId, SEDBStorage.KEY_DID_REGISTERLOCATION);
+            var lastLocationIsGravity = SEDBStorage.Instance.GetEntityValue<bool>(playerId.SteamId, SEDBStorage.KEY_LASTLOCATION_ISGRAVITY);
+            var lastLocationEntityId = SEDBStorage.Instance.GetEntityValue<long>(playerId.SteamId, SEDBStorage.KEY_LASTLOCATION_ENTITYID);
+
+            var playerPos = player.GetPosition();
+
+            if (MyGravityProviderSystem.IsPositionInNaturalGravity(playerPos))
+            {
+                /* Player Enters in Gravity Field */
+                
+                if (!lastLocationIsGravity)
+                {
+
+                    var action = Plugin.PluginInstance.m_configuration.GravityActionEnter;
+                    var gridName = "";
+                    var planetName = Plugin.PluginInstance.m_configuration.UnknowPlanetNameToUse;
+
+                    var planet = GetPlanetAtRange(playerPos);
+
+                    if (planet != null && lastLocationEntityId != planet.EntityId)
+                    {
+
+                        var KEY_VISITED = string.Format(SEDBStorage.KEY_LOCATION_VISITED, planet.EntityId);
+                        var didVisitLocation = SEDBStorage.Instance.GetEntityValue<bool>(playerId.SteamId, KEY_VISITED);
+
+                        IMyCubeBlock cockpit = null;
+                        if (character != null)
+                        {
+                            cockpit = character.Parent as IMyCubeBlock;
+                        }
+                        else
+                        {
+                            cockpit = player.Controller?.ControlledEntity as IMyCubeBlock;                            
+                        }
+
+                        if (cockpit != null)
+                        {
+                            gridName = cockpit.CubeGrid?.DisplayName;
+                            if (string.IsNullOrEmpty(gridName))
+                                gridName = Plugin.PluginInstance.m_configuration.UnknowGravityGridName;
+                        }
+
+                        if (Plugin.PluginInstance.m_configuration.DisplayEnterGravityMessages || 
+                            (!didVisitLocation && Plugin.PluginInstance.m_configuration.DisplayFirstEnterGravityMessages))
+                        {
+
+                            if (!didVisitLocation)
+                            {
+                                action = Plugin.PluginInstance.m_configuration.GravityActionFirstEnter;
+                            }
+
+                            planetName = planet.DisplayName;
+                            if (string.IsNullOrEmpty(planetName))
+                                planetName = planet.Generator?.Id.SubtypeName;
+                            if (planetName.Contains("_"))
+                            {
+                                var nameParts = planetName.Split('_');
+                                var namesToUse = nameParts.Where(x => !long.TryParse(x, out _)).ToArray();
+                                planetName = string.Join(" ", nameParts);
+                            }
+
+                            var msgToUse = string.IsNullOrEmpty(gridName) ?
+                                Plugin.PluginInstance.m_configuration.PilotNoGridGravityMessage :
+                                Plugin.PluginInstance.m_configuration.GridGravityMessage;
+                            msgToUse = msgToUse.Replace("{a}", action);
+                            msgToUse = msgToUse.Replace("{g}", gridName);
+                            msgToUse = msgToUse.Replace("{t}", planetName);
+
+                            Plugin.PluginInstance.DDBridge.SendStatusMessage(player.DisplayName, playerId.SteamId, msgToUse);
+
+                        }
+
+                        SEDBStorage.Instance.SetEntityValue(playerId.SteamId, SEDBStorage.KEY_DID_REGISTERLOCATION, true);
+                        SEDBStorage.Instance.SetEntityValue(playerId.SteamId, SEDBStorage.KEY_LASTLOCATION_ISGRAVITY, true);
+                        SEDBStorage.Instance.SetEntityValue(playerId.SteamId, KEY_VISITED, true);
+                        SEDBStorage.Instance.SetEntityValue(playerId.SteamId, SEDBStorage.KEY_LASTLOCATION_ENTITYID, planet.EntityId);
+                        SEDBStorage.Save();
+
+                    }
+
+                }
+
+            }
+            else
+            {
+
+                /* Player Leaves in Gravity Field */
+                if (didRegisterLocation && lastLocationIsGravity)
+                {
+
+                    var action = Plugin.PluginInstance.m_configuration.GravityActionLeave;
+                    var gridName = "";
+                    var planetName = Plugin.PluginInstance.m_configuration.UnknowPlanetNameToUse;
+
+                    if (Plugin.PluginInstance.m_configuration.DisplayLeaveGravityMessages)
+                    {
+
+                        var cockpit = character.Parent as IMyCubeBlock;
+                        if (cockpit != null)
+                        {
+                            gridName = cockpit.CubeGrid?.DisplayName;
+                            if (string.IsNullOrEmpty(gridName))
+                                gridName = Plugin.PluginInstance.m_configuration.UnknowGravityGridName;
+                        }
+
+                        var planet = GetPlanetAtRange(playerPos);
+
+                        var distanceToPlanet = Math.Abs(Vector3D.Distance(planet.PositionComp.GetPosition(), playerPos)) / 1000;
+
+                        if (planet != null && distanceToPlanet <= Plugin.PluginInstance.m_configuration.MaxDistanceToDetectAPlanet)
+                        {
+                            planetName = planet.DisplayName;
+                            if (string.IsNullOrEmpty(planetName))
+                                planetName = planet.Generator?.Id.SubtypeName;
+                            if (planetName.Contains("_"))
+                            {
+                                var nameParts = planetName.Split('_');
+                                var namesToUse = nameParts.Where(x => !long.TryParse(x, out _)).ToArray();
+                                planetName = string.Join(" ", nameParts);
+                            }
+                        }
+
+                        var msgToUse = string.IsNullOrEmpty(gridName) ?
+                            Plugin.PluginInstance.m_configuration.PilotNoGridGravityMessage :
+                            Plugin.PluginInstance.m_configuration.GridGravityMessage;
+                        msgToUse = msgToUse.Replace("{a}", action);
+                        msgToUse = msgToUse.Replace("{g}", gridName);
+                        msgToUse = msgToUse.Replace("{t}", planetName);
+
+                        Plugin.PluginInstance.DDBridge.SendStatusMessage(player.DisplayName, player.Id.SteamId, msgToUse);
+
+                    }
+
+                    SEDBStorage.Instance.SetEntityValue(player.Id.SteamId, SEDBStorage.KEY_DID_REGISTERLOCATION, true);
+                    SEDBStorage.Instance.SetEntityValue(player.Id.SteamId, SEDBStorage.KEY_LASTLOCATION_ISGRAVITY, false);
+                    SEDBStorage.Instance.SetEntityValue<long>(player.Id.SteamId, SEDBStorage.KEY_LASTLOCATION_ENTITYID, 0);
+                    SEDBStorage.Save();
+
+                }
+
+                if (!didRegisterLocation)
+                {
+
+                    SEDBStorage.Instance.SetEntityValue(player.Id.SteamId, SEDBStorage.KEY_DID_REGISTERLOCATION, true);
+                    SEDBStorage.Instance.SetEntityValue(player.Id.SteamId, SEDBStorage.KEY_LASTLOCATION_ISGRAVITY, false);
+                    SEDBStorage.Instance.SetEntityValue<long>(player.Id.SteamId, SEDBStorage.KEY_LASTLOCATION_ENTITYID, 0);
+                    SEDBStorage.Save();
+
+                }
+
+            }
+        }
+
+        private static void CheckOnPlayerList()
+        {
+            try
+            {
+                if (_inicialLoadComplete)
+                {
+
+                    if (!Plugin.PluginInstance.m_configuration.Enabled) return;
+
+                    foreach (var playerId in Players.Keys)
+                    {
+                        CheckOnPlayerGravityMessages(playerId, Players[playerId].Character);
+                    }
+
+                }
+            }
+            catch (Exception e)
+            {
+                Logging.Instance.LogError(typeof(GameWatcherController), e);
+            }
+        }
+
+        private static void Entities_OnEntityRemove(MyEntity entity)
+        {
+            try
+            {
+                var planet = entity as MyPlanet;
+                if (planet != null && Planets.ContainsKey(planet.EntityId))
+                {
+                    lock (Planets)
+                    {
+                        Planets.Remove(planet.EntityId);
+                    }
+                    return;
+                }
+            }
+            catch (Exception e)
+            {
+                Logging.Instance.LogError(typeof(GameWatcherController), e);
             }
         }
 
@@ -51,13 +359,30 @@ namespace SEDB_LITE
             Plugin.DoDispose();
         }
 
+        private static bool canRun;
+        private static ParallelTasks.Task task;
         private static void Static_OnReady()
         {
             try
             {
                 if (Plugin.PluginInstance?.DDBridge != null)
                 {
+                    Logging.Instance.LogInfo(typeof(GameWatcherController), "MySession OnReady");
                     Plugin.PluginInstance.DDBridge.SendStatusMessage(default, default, Plugin.PluginInstance.m_configuration.ServerStartedMessage);
+                    UpdatePlayerList();
+                    canRun = true;
+                    task = MyAPIGateway.Parallel.StartBackground(() =>
+                    {
+                        Logging.Instance.LogInfo(typeof(GameWatcherController), "StartBackground [START]");
+                        while (canRun)
+                        {
+                            CheckOnPlayerList();
+                            if (MyAPIGateway.Parallel != null && Plugin.PluginInstance?.m_configuration != null)
+                                MyAPIGateway.Parallel.Sleep(Plugin.PluginInstance.m_configuration.PlayerCheckStatusInterval);
+                            else
+                                break;
+                        }
+                    });
                 }
                 else
                 {
@@ -143,12 +468,15 @@ namespace SEDB_LITE
 
         public static void Dispose()
         {
+            canRun = false;
+            task.Wait();
             MyVisualScriptLogicProvider.PlayerDied -= MyPlayer_Die;
             MyVisualScriptLogicProvider.RespawnShipSpawned -= MyEntities_RespawnShipSpawned;
             if (MySession.Static != null)
             {
                 MySession.Static.OnReady -= Static_OnReady;
                 MySession.OnUnloading -= MySession_OnUnloading;
+
                 if (MySession.Static.Factions != null)
                 {
                     MySession.Static.Factions.FactionCreated -= Factions_FactionCreated;
@@ -158,7 +486,13 @@ namespace SEDB_LITE
                 {
                     MySession.Static.Gpss.GpsAdded -= Gpss_GpsAdded;
                 }
+                if (MySession.Static.Players != null)
+                {
+                    MySession.Static.Players.PlayersChanged -= Players_PlayersChanged;
+                }
             }
+            MyEntities.OnEntityAdd -= Entities_OnEntityAdd;
+            MyEntities.OnEntityRemove -= Entities_OnEntityRemove;
         }
 
         private static bool IsFactionChangeValidToMsg(MyFactionStateChange action, out int msgType)
@@ -422,6 +756,9 @@ namespace SEDB_LITE
                     var player = MySession.Static.Players.GetPlayerById(id);
                     if (player != null && !string.IsNullOrWhiteSpace(player.DisplayName))
                     {
+
+                        if (Plugin.PluginInstance.m_configuration.IgnoreBotDieMessages && player.IsBot) return;
+
                         long attackerPlayerId = 0;
                         MyDamageInformationExtensions.DamageType damageType;
                         MyDamageInformationExtensions.AttackerType attackerType = MyDamageInformationExtensions.AttackerType.None;
@@ -441,6 +778,16 @@ namespace SEDB_LITE
                                 var player2 = MySession.Static.Players.GetPlayerById(id2);
                                 if (player2 != null && !string.IsNullOrWhiteSpace(player2.DisplayName))
                                 {
+                                    var didKill = SEDBStorage.Instance.GetEntityValue<bool>(player2.Id.SteamId, SEDBStorage.KEY_DID_KILL);
+                                    if (!didKill)
+                                    {
+                                        Plugin.PluginInstance.DDBridge.SendStatusMessage(player2.DisplayName, player2.Id.SteamId, Plugin.PluginInstance.m_configuration.FirstKillMessage);
+                                        SEDBStorage.Instance.SetEntityValue<bool>(player2.Id.SteamId, SEDBStorage.KEY_DID_KILL, true);
+                                    }
+                                    var killCount = SEDBStorage.Instance.GetEntityValue<int>(player2.Id.SteamId, SEDBStorage.KEY_KILL_COUNT);
+                                    SEDBStorage.Instance.SetEntityValue<int>(player2.Id.SteamId, SEDBStorage.KEY_KILL_COUNT, killCount + 1);
+                                    SEDBStorage.Save();
+
                                     msgToUse = Plugin.PluginInstance.m_configuration.MurderMessage;
                                     msgToUse = msgToUse.Replace("{p2}", player2.DisplayName);
                                 }
@@ -449,7 +796,7 @@ namespace SEDB_LITE
 
                         if (Plugin.DEBUG)
                         {
-                            Logging.Instance.LogInfo(typeof(Plugin), $"MyPlayer_Die: playerId={playerId} | damage={damage.Type} | damageType={damageType}");
+                            Logging.Instance.LogInfo(typeof(Plugin), $"MyPlayer_Die: playerId={playerId} | AttackerId={damage.AttackerId} | attackerPlayerId={attackerPlayerId} | damage={damage.Type} | damageType={damageType}");
                         }
 
                         msgToUse = msgToUse.Replace("{c}", GetDamageTypeDescription(damageType));

@@ -49,7 +49,7 @@ namespace SEDB_LITE
                                 {
                                     Logging.Instance.LogInfo(typeof(MsgWorker), $"Send message : MSG={msgToSend.Message}");
                                 }
-
+                                
                                 if (Bridge.Discord != null && Bridge.Ready)
                                 {
                                     Bridge.Discord.SendMessageAsync(msgToSend.Chann, msgToSend.Message.Replace("/n", "\n")).Wait();

@@ -28,7 +28,6 @@ namespace SEDB_LITE
 
         [Display(Name = "Enabled", Order = 1)]
         [Category("General")]
-        [Description("Enable/Disable the Plugin...")]
         public bool Enabled = false;
 
         [Display(Name = "Bot Token", Order = 2)]
@@ -58,6 +57,10 @@ namespace SEDB_LITE
         [Display(Name = "Debug", Order = 8)]
         [Category("General")]
         public bool DebugMode = false;
+
+        [Display(Name = "Check player interval", Order = 9)]
+        [Category("General")]
+        public int PlayerCheckStatusInterval = 1000;
 
         /* Server */
 
@@ -137,6 +140,56 @@ namespace SEDB_LITE
         [Category("Grid Jump")]
         public string UnknowJumpGridName = "unknow grid";
 
+        /* Grid Graviry */
+
+        [Display(Name = "Enable gravity messages", Order = 1)]
+        [Category("Grid Graviry")]
+        public bool DisplayGridsGravityMessages = true;
+
+        [Display(Name = "Enable leave gravity messages", Order = 1)]
+        [Category("Grid Graviry")]
+        public bool DisplayLeaveGravityMessages = true;
+
+        [Display(Name = "Enable enter gravity messages", Order = 1)]
+        [Category("Grid Graviry")]
+        public bool DisplayEnterGravityMessages = true;
+
+        [Display(Name = "Enable first enter gravity messages", Order = 1)]
+        [Category("Grid Graviry")]
+        public bool DisplayFirstEnterGravityMessages = true;
+
+        [Display(Name = "Msg grid in gravity", Order = 2)]
+        [Category("Grid Graviry")]
+        public string GridGravityMessage = ":earth_americas: {p} aboard the {g} just {a} the {t} gravity field.";
+
+        [Display(Name = "Msg grid in gravity (no pilot)", Order = 3)]
+        [Category("Grid Graviry")]
+        public string PilotNoGridGravityMessage = ":earth_americas: Without ship {p} just {a} the {t} gravity field.";
+
+        [Display(Name = "Gravity action: Enter", Order = 4)]
+        [Category("Grid Graviry")]
+        public string GravityActionEnter = "enters";
+
+        [Display(Name = "Gravity action: First Enter", Order = 4)]
+        [Category("Grid Graviry")]
+        public string GravityActionFirstEnter = "enters for the first time";
+
+        [Display(Name = "Gravity action: Leave", Order = 5)]
+        [Category("Grid Graviry")]
+        public string GravityActionLeave = "leave";
+
+        [Display(Name = "Unknow planet name", Order = 6)]
+        [Category("Grid Graviry")]
+        public string UnknowPlanetNameToUse = "unknow";
+
+        [Display(Name = "Unknow Grid Name", Order = 5)]
+        [Category("Grid Graviry")]
+        public string UnknowGravityGridName = "unknow grid";
+
+        [Display(Name = "Max distance to detect planet", Order = 9)]
+        [Category("Grid Graviry")]
+        public float MaxDistanceToDetectAPlanet = 120;
+
         /* Player */
 
         [Display(Name = "Enable to display respawn messages", Order = 1)]
@@ -151,6 +204,10 @@ namespace SEDB_LITE
         [Category("Player")]
         public bool DisplayDieMessages = true;
 
+        [Display(Name = "Ignore bot death messages", Order = 3)]
+        [Category("Player")]
+        public bool IgnoreBotDieMessages = false;
+
         [Display(Name = "Msg when the player dies", Order = 4)]
         [Category("Player")]
         public string DieMessage = ":skull: The player {p} has died by {c} after taking {d} of damage.";
@@ -158,6 +215,10 @@ namespace SEDB_LITE
         [Display(Name = "Msg when the player is murdered", Order = 5)]
         [Category("Player")]
         public string MurderMessage = ":skull: The player {p} was murdered by {p2} that cause {d} of damage by {c}.";
+
+        [Display(Name = "Msg when the player first kill", Order = 5)]
+        [Category("Player")]
+        public string FirstKillMessage = ":wolf: {p} tasted blood for the first time.";
 
         [Display(Name = "Death cause: Unknow", Order = 6)]
         [Category("Player")]
