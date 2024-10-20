@@ -151,7 +151,7 @@ namespace SEDB_LITE
 
         public string GetPluginTitle()
         {
-            return "SEDiscordBridge - Lite! v1.0.3.10";
+            return "SEDiscordBridge - Lite! v1.0.4.0";
         }
 
         public Task ProcessStatusMessage(string user, ulong player, string message)

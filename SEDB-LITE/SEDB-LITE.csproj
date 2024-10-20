@@ -74,22 +74,22 @@
     <Reference Include="PresentationCore" />
     <Reference Include="PresentationFramework" />
     <Reference Include="Sandbox.Common">
-      <HintPath>D:\Steam\steamapps\common\SpaceEngineersDedicatedServer\DedicatedServer64\Sandbox.Common.dll</HintPath>
+      <HintPath>E:\Steam\steamapps\common\SpaceEngineersDedicatedServer\DedicatedServer64\Sandbox.Common.dll</HintPath>
     </Reference>
     <Reference Include="Sandbox.Game">
-      <HintPath>D:\Steam\steamapps\common\SpaceEngineersDedicatedServer\DedicatedServer64\Sandbox.Game.dll</HintPath>
+      <HintPath>E:\Steam\steamapps\common\SpaceEngineersDedicatedServer\DedicatedServer64\Sandbox.Game.dll</HintPath>
     </Reference>
     <Reference Include="Sandbox.Game.XmlSerializers">
-      <HintPath>D:\Steam\steamapps\common\SpaceEngineersDedicatedServer\DedicatedServer64\Sandbox.Game.XmlSerializers.dll</HintPath>
+      <HintPath>E:\Steam\steamapps\common\SpaceEngineersDedicatedServer\DedicatedServer64\Sandbox.Game.XmlSerializers.dll</HintPath>
     </Reference>
     <Reference Include="Sandbox.Graphics">
-      <HintPath>D:\Steam\steamapps\common\SpaceEngineersDedicatedServer\DedicatedServer64\Sandbox.Graphics.dll</HintPath>
+      <HintPath>E:\Steam\steamapps\common\SpaceEngineersDedicatedServer\DedicatedServer64\Sandbox.Graphics.dll</HintPath>
     </Reference>
     <Reference Include="SpaceEngineers.Game">
-      <HintPath>D:\Steam\steamapps\common\SpaceEngineersDedicatedServer\DedicatedServer64\SpaceEngineers.Game.dll</HintPath>
+      <HintPath>E:\Steam\steamapps\common\SpaceEngineersDedicatedServer\DedicatedServer64\SpaceEngineers.Game.dll</HintPath>
     </Reference>
     <Reference Include="SpaceEngineers.ObjectBuilders">
-      <HintPath>D:\Steam\steamapps\common\SpaceEngineersDedicatedServer\DedicatedServer64\SpaceEngineers.ObjectBuilders.dll</HintPath>
+      <HintPath>E:\Steam\steamapps\common\SpaceEngineersDedicatedServer\DedicatedServer64\SpaceEngineers.ObjectBuilders.dll</HintPath>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Buffers, Version=4.0.3.0, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51, processorArchitecture=MSIL">
@@ -167,25 +167,25 @@
     <Reference Include="System.Data" />
     <Reference Include="System.Xml" />
     <Reference Include="VRage">
-      <HintPath>D:\Steam\steamapps\common\SpaceEngineersDedicatedServer\DedicatedServer64\VRage.dll</HintPath>
+      <HintPath>E:\Steam\steamapps\common\SpaceEngineersDedicatedServer\DedicatedServer64\VRage.dll</HintPath>
     </Reference>
     <Reference Include="VRage.Dedicated">
-      <HintPath>D:\Steam\steamapps\common\SpaceEngineersDedicatedServer\DedicatedServer64\VRage.Dedicated.dll</HintPath>
+      <HintPath>E:\Steam\steamapps\common\SpaceEngineersDedicatedServer\DedicatedServer64\VRage.Dedicated.dll</HintPath>
     </Reference>
     <Reference Include="VRage.Game">
-      <HintPath>D:\Steam\steamapps\common\SpaceEngineersDedicatedServer\DedicatedServer64\VRage.Game.dll</HintPath>
+      <HintPath>E:\Steam\steamapps\common\SpaceEngineersDedicatedServer\DedicatedServer64\VRage.Game.dll</HintPath>
     </Reference>
     <Reference Include="VRage.Input">
-      <HintPath>D:\Steam\steamapps\common\SpaceEngineersDedicatedServer\DedicatedServer64\VRage.Input.dll</HintPath>
+      <HintPath>E:\Steam\steamapps\common\SpaceEngineersDedicatedServer\DedicatedServer64\VRage.Input.dll</HintPath>
     </Reference>
     <Reference Include="VRage.Library">
-      <HintPath>D:\Steam\steamapps\common\SpaceEngineersDedicatedServer\DedicatedServer64\VRage.Library.dll</HintPath>
+      <HintPath>E:\Steam\steamapps\common\SpaceEngineersDedicatedServer\DedicatedServer64\VRage.Library.dll</HintPath>
     </Reference>
     <Reference Include="VRage.Math">
-      <HintPath>D:\Steam\steamapps\common\SpaceEngineersDedicatedServer\DedicatedServer64\VRage.Math.dll</HintPath>
+      <HintPath>E:\Steam\steamapps\common\SpaceEngineersDedicatedServer\DedicatedServer64\VRage.Math.dll</HintPath>
     </Reference>
     <Reference Include="VRage.Network">
-      <HintPath>D:\Steam\steamapps\common\SpaceEngineersDedicatedServer\DedicatedServer64\VRage.Network.dll</HintPath>
+      <HintPath>E:\Steam\steamapps\common\SpaceEngineersDedicatedServer\DedicatedServer64\VRage.Network.dll</HintPath>
     </Reference>
     <Reference Include="WindowsBase" />
   </ItemGroup>

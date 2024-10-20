@@ -29,7 +29,7 @@ namespace SEDB_LITE.Patches
 
         [PrefixMethod]
         [TargetMethod(Type = typeof(MyMultiplayerBase), Method = "RaiseChatMessageReceived")]
-        public static void ProcessChat(ulong steamUserID, string messageText, ChatChannel channel, long targetId, string customAuthorName = null)
+        public static void ProcessChat(ulong steamUserID, string messageText, ChatChannel channel, long targetId, VRage.GameServices.ChatMessageCustomData customData)
         {
             if (messageText.StartsWith("!SEDB") && Utilities.IsPlayerAdmin(steamUserID))
             {
@@ -39,7 +39,7 @@ namespace SEDB_LITE.Patches
             else
             {
                 string playerName = Utilities.GetPlayerName(steamUserID);
-                ChatMsg msg = new ChatMsg() { Author = steamUserID, AuthorName = playerName, Text = messageText, Channel = channel, Target = targetId, CustomAuthor = customAuthorName };
+                ChatMsg msg = new ChatMsg() { Author = steamUserID, AuthorName = playerName, Text = messageText, Channel = channel, Target = targetId, CustomAuthor = customData.AuthorName };
                 Task.Run(async () => await Plugin.ProcessAsync(msg));
             }
         }
